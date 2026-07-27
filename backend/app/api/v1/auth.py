@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from sqlalchemy import exists
 
 from app.api.deps import get_db
 from app.core.security import (
@@ -8,7 +7,7 @@ from app.core.security import (
 )
 from app.models.user import User
 from app.schemas.user import (
-    TelegramAuth, UserResponse, TokenResponse,
+    TelegramAuth, TokenResponse,
 )
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -29,7 +28,6 @@ def auth_telegram(payload: TelegramAuth, db: Session = Depends(get_db)):
     ).first()
 
     if not user:
-        # Создаём нового пользователя
         user = User(
             telegram_id=payload.telegram_id,
             username=payload.username,
@@ -41,7 +39,6 @@ def auth_telegram(payload: TelegramAuth, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(user)
 
-    # Обновляем данные профиля при каждом входе
     user.username = payload.username
     user.first_name = payload.first_name
     user.last_name = payload.last_name
