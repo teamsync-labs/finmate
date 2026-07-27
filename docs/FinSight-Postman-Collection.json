@@ -1,0 +1,1678 @@
+{
+  "info": {
+    "name": "FinSight API",
+    "description": "Коллекция для тестирования API финансового помощника FinSight\n\n## Предусловия\n1. Запустите сервер: `uvicorn app.main:app --reload`\n2. Создайте окружение Postman с переменной `base_url` = `http://localhost:8000`\n3. Импортируйте коллекцию\n4. Запускайте запросы последовательно — токен будет автоматически сохраняться\n\n## Порядок запуска\n1. **Auth → Register** — создание пользователя\n2. **Auth → Login** — получение JWT (автоматически сохраняется в коллекцию)\n3. Остальные — в любом порядке",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "account_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "category_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "transaction_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_email",
+      "value": "test@example.com",
+      "type": "string"
+    },
+    {
+      "key": "user_password",
+      "value": "TestPass123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Регистрация и аутентификация пользователей",
+      "item": [
+        {
+          "name": "Register — Регистрация пользователя",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Проверка статус-кода",
+                  "pm.test('Status 201 — пользователь создан', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Проверка структуры ответа",
+                  "pm.test('Ответ содержит данные пользователя', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('email');",
+                  "    pm.expect(json).to.have.property('full_name');",
+                  "    pm.expect(json).to.have.property('settings');",
+                  "    pm.expect(json).to.have.property('created_at');",
+                  "    pm.expect(json.email).to.eql(pm.request.body.json.email);",
+                  "});",
+                  "",
+                  "// Проверка settings по умолчанию",
+                  "pm.test('Настройки по умолчанию — RUB и ru', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.settings.currency).to.eql('RUB');",
+                  "    pm.expect(json.settings.language).to.eql('ru');",
+                  "});",
+                  "",
+                  "// Сохраняем email для логина",
+                  "pm.collectionVariables.set('user_email', pm.request.body.json.email);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": "{{user_email}}",\n  \"password\": "{{user_password}}",\n  \"full_name\": "Тестовый Пользователь"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Создание нового пользователя. Email и пароль можно переопределить через переменные коллекции."
+          }
+        },
+        {
+          "name": "Login — Вход в систему",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Проверка статус-кода",
+                  "pm.test('Status 200 — успешный вход', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "// Проверка наличия токена",
+                  "pm.test('Ответ содержит access_token', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('access_token');",
+                  "    pm.expect(json).to.have.property('token_type');",
+                  "    pm.expect(json.token_type).to.eql('bearer');",
+                  "    pm.expect(json.access_token).to.match(/^[A-Za-z0-9._-]+\\.[A-Za-z0-9._-]+\\.[A-Za-z0-9._-]+$/);",
+                  "});",
+                  "",
+                  "// Сохраняем токен в переменную коллекции",
+                  "pm.test('Токен сохранён для последующих запросов', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.access_token);",
+                  "    pm.expect(pm.collectionVariables.get('token')).to.not.eql('');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": "{{user_email}}",\n  \"password\": "{{user_password}}"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Вход с email и паролем. JWT-токен автоматически сохраняется в переменную `token` коллекции."
+          }
+        },
+        {
+          "name": "Register — Ошибка: дубль email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 — email уже занят', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Ответ содержит сообщение об ошибке', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('detail');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": "{{user_email}}",\n  \"password\": "{{user_password}}",\n  \"full_name": "Дубликат"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Повторная регистрация с тем же email должна вернуть 400."
+          }
+        },
+        {
+          "name": "Login — Ошибка: неверный пароль",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 — неверный пароль', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Ответ содержит сообщение об ошибке', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('detail');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": "{{user_email}}",\n  \"password\": "WrongPassword99!"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Вход с неверным паролем должен вернуть 401."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "description": "Управление профилем пользователя",
+      "item": [
+        {
+          "name": "Get Me — Профиль пользователя",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 — профиль получен', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Ответ содержит данные пользователя', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('email');",
+                  "    pm.expect(json).to.have.property('full_name');",
+                  "    pm.expect(json).to.have.property('settings');",
+                  "    pm.expect(json).to.have.property('created_at');",
+                  "    pm.expect(json.email).to.eql(pm.collectionVariables.get('user_email'));",
+                  "});",
+                  "",
+                  "pm.test('Время ответа < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me"
+              ]
+            },
+            "description": "Получение профиля текущего авторизованного пользователя."
+          }
+        },
+        {
+          "name": "Get Me — Ошибка: нет токена",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 — не авторизован', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "users",
+                "me"
+              ]
+            },
+            "description": "Запрос без токена должен вернуть 401."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "description": "Управление счетами пользователя",
+      "item": [
+        {
+          "name": "Create Account — Создать счёт",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 — счёт создан', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Проверка структуры ответа', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('user_id');",
+                  "    pm.expect(json).to.have.property('name');",
+                  "    pm.expect(json).to.have.property('type');",
+                  "    pm.expect(json).to.have.property('balance');",
+                  "    pm.expect(json).to.have.property('currency');",
+                  "    pm.expect(json).to.have.property('is_archived');",
+                  "    pm.expect(json).to.have.property('created_at');",
+                  "    pm.expect(json).to.have.property('updated_at');",
+                  "    pm.expect(json.type).to.be.oneOf(['cash', 'bank', 'credit', 'investment', 'savings']);",
+                  "});",
+                  "",
+                  "pm.test('Баланс совпадает с отправленным', function () {",
+                  "    const json = pm.response.json();",
+                  "    const sentBalance = JSON.parse(pm.request.body.raw).balance;",
+                  "    pm.expect(json.balance).to.eql(sentBalance);",
+                  "});",
+                  "",
+                  "pm.test('Время ответа < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});",
+                  "",
+                  "// Сохраняем ID счёта",
+                  "pm.collectionVariables.set('account_id', pm.response.json().id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Основной счёт\",\n  \"type\": \"bank\",\n  \"balance\": 15000.50,\n  \"currency\": \"RUB\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/accounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts"
+              ]
+            },
+            "description": "Создание нового банковского счёта. ID сохраняется для последующих запросов."
+          }
+        },
+        {
+          "name": "Create Account — Кредитная карта",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 — кредитный счёт создан', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Проверка credit_limit', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.type).to.eql('credit');",
+                  "    pm.expect(json.credit_limit).to.eql(100000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Кредитная карта\",\n  \"type\": \"credit\",\n  \"balance\": 50000.00,\n  \"currency\": \"RUB\",\n  \"credit_limit\": 100000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/accounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts"
+              ]
+            },
+            "description": "Создание кредитного счёта с лимитом."
+          }
+        },
+        {
+          "name": "Get All Accounts — Список счетов",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 — список получен', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Ответ — массив счетов', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "    pm.expect(json.length).to.be.at.least(1);",
+                  "});",
+                  "",
+                  "pm.test('Каждый элемент — валидный счёт', function () {",
+                  "    const json = pm.response.json();",
+                  "    json.forEach(account => {",
+                  "        pm.expect(account).to.have.property('id');",
+                  "        pm.expect(account).to.have.property('name');",
+                  "        pm.expect(account).to.have.property('type');",
+                  "        pm.expect(account).to.have.property('balance');",
+                  "        pm.expect(account).to.have.property('currency');",
+                  "        pm.expect(account).to.have.property('is_archived');",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Время ответа < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/accounts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts"
+              ]
+            },
+            "description": "Получение списка всех счетов текущего пользователя."
+          }
+        },
+        {
+          "name": "Get Account by ID — Получить счёт",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 — счёт найден', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('ID счёта совпадает с запрошенным', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.id).to.eql(parseInt(pm.collectionVariables.get('account_id')));",
+                  "});",
+                  "",
+                  "pm.test('Проверка всех полей AccountResponse', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.all.keys([",
+                  "        'id', 'user_id', 'name', 'type', 'balance',",
+                  "        'currency', 'is_archived', 'credit_limit',",
+                  "        'created_at', 'updated_at'",
+                  "    ]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/accounts/{{account_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts",
+                "{{account_id}}"
+              ]
+            },
+            "description": "Получение счёта по ID."
+          }
+        },
+        {
+          "name": "Update Account — Обновить счёт",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 — счёт обновлён', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Название счёта изменилось', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.name).to.eql('Основной счёт (обновлён)');",
+                  "});",
+                  "",
+                  "pm.test('Баланс обновился', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.balance).to.eql(20000.00);",
+                  "});",
+                  "",
+                  "pm.test('Время ответа < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Основной счёт (обновлён)\",\n  \"balance\": 20000.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/accounts/{{account_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts",
+                "{{account_id}}"
+              ]
+            },
+            "description": "Обновление названия и баланса счёта."
+          }
+        },
+        {
+          "name": "Delete Account — Удалить счёт",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 — счёт удалён', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('Тело ответа пустое', function () {",
+                  "    pm.expect(pm.response.text()).to.eql('');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/accounts/{{account_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts",
+                "{{account_id}}"
+              ]
+            },
+            "description": "Удаление счёта. После удаления повторите Create Account, чтобы создать новый счёт для тестов."
+          }
+        },
+        {
+          "name": "Get Account — Ошибка: не найден",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 — счёт не найден', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Ответ содержит detail', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('detail');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/accounts/999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "accounts",
+                "999999"
+              ]
+            },
+            "description": "Запрос несуществующего счёта должен вернуть 404."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "description": "Управление категориями транзакций",
+      "item": [
+        {
+          "name": "Create Category — Доход",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 — категория создана', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Проверка структуры CategoryResponse', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('user_id');",
+                  "    pm.expect(json).to.have.property('name');",
+                  "    pm.expect(json).to.have.property('type');",
+                  "    pm.expect(json).to.have.property('is_system');",
+                  "    pm.expect(json).to.have.property('icon');",
+                  "    pm.expect(json).to.have.property('color');",
+                  "    pm.expect(json.name).to.eql('Зарплата');",
+                  "    pm.expect(json.type).to.eql('income');",
+                  "    pm.expect(json.is_system).to.eql(false);",
+                  "});",
+                  "",
+                  "// Сохраняем ID категории",
+                  "pm.collectionVariables.set('category_id', pm.response.json().id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Зарплата\",\n  \"type\": \"income\",\n  \"icon\": \"💰\",\n  \"color\": \"#00FF00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            },
+            "description": "Создание категории доходов. ID сохраняется для последующих запросов."
+          }
+        },
+        {
+          "name": "Create Category — Расход",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 — категория расходов создана', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Тип категории — expense', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.type).to.eql('expense');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Продукты\",\n  \"type\": \"expense\",\n  \"icon\": \"🛒\",\n  \"color\": \"#FF0000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            },
+            "description": "Создание категории расходов."
+          }
+        },
+        {
+          "name": "Create Category — Подкатегория",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 — подкатегория создана', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Проверка parent_id', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.parent_id).to.eql(parseInt(pm.collectionVariables.get('category_id')));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Бонусы\",\n  \"type\": \"income\",\n  \"parent_id\": {{category_id}},\n  \"icon\": \"🎁\",\n  \"color\": \"#00AA00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            },
+            "description": "Создание подкатегории (с parent_id)."
+          }
+        },
+        {
+          "name": "Get All Categories — Список категорий",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 — список получен', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Ответ — массив категорий', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "    pm.expect(json.length).to.be.at.least(1);",
+                  "});",
+                  "",
+                  "pm.test('Каждый элемент — валидная категория', function () {",
+                  "    const json = pm.response.json();",
+                  "    json.forEach(category => {",
+                  "        pm.expect(category).to.have.property('id');",
+                  "        pm.expect(category).to.have.property('name');",
+                  "        pm.expect(category).to.have.property('type');",
+                  "        pm.expect(category.type).to.be.oneOf(['income', 'expense']);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            },
+            "description": "Получение списка всех категорий пользователя."
+          }
+        },
+        {
+          "name": "Get Categories — Фильтр по типу",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Все категории — income', function () {",
+                  "    const json = pm.response.json();",
+                  "    json.forEach(category => {",
+                  "        pm.expect(category.type).to.eql('income');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories?type=income",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "income"
+                }
+              ]
+            },
+            "description": "Фильтрация категорий по типу."
+          }
+        },
+        {
+          "name": "Update Category — Обновить категорию",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 — категория обновлена', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Название и иконка изменились', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.name).to.eql('Зарплата (основная)');",
+                  "    pm.expect(json.icon).to.eql('💵');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Зарплата (основная)\",\n  \"icon\": \"💵\",\n  \"color\": \"#00CC00\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                "{{category_id}}"
+              ]
+            },
+            "description": "Обновление названия, иконки и цвета категории."
+          }
+        },
+        {
+          "name": "Delete Category — Удалить категорию",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 — категория удалена', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('Тело ответа пустое', function () {",
+                  "    pm.expect(pm.response.text()).to.eql('');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories/{{category_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                "{{category_id}}"
+              ]
+            },
+            "description": "Удаление категории по ID."
+          }
+        },
+        {
+          "name": "Delete Category — Ошибка: не найдена",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 — категория не найдена', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories/999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                "999999"
+              ]
+            },
+            "description": "Удаление несуществующей категории — ожидается 404."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "description": "Управление транзакциями",
+      "item": [
+        {
+          "name": "Create Transaction — Доход",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Убедимся, что есть счёт для транзакции",
+                  "const accountId = pm.collectionVariables.get('account_id');",
+                  "if (!accountId) {",
+                  "    console.error('Сначала создайте счёт через Create Account!');",
+                  "    pm.expect.fail('Нет account_id. Выполните Create Account.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 — транзакция создана', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Проверка структуры TransactionResponse', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('user_id');",
+                  "    pm.expect(json).to.have.property('account_id');",
+                  "    pm.expect(json).to.have.property('category_id');",
+                  "    pm.expect(json).to.have.property('type');",
+                  "    pm.expect(json).to.have.property('amount');",
+                  "    pm.expect(json).to.have.property('description');",
+                  "    pm.expect(json).to.have.property('date');",
+                  "    pm.expect(json).to.have.property('is_recurring');",
+                  "    pm.expect(json).to.have.property('created_at');",
+                  "    pm.expect(json).to.have.property('updated_at');",
+                  "});",
+                  "",
+                  "pm.test('Тип транзакции — income', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.type).to.eql('income');",
+                  "});",
+                  "",
+                  "pm.test('Сумма положительная', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.amount).to.be.above(0);",
+                  "});",
+                  "",
+                  "// Сохраняем ID транзакции",
+                  "pm.collectionVariables.set('transaction_id', pm.response.json().id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account_id\": {{account_id}},\n  \"category_id\": {{category_id}},\n  \"type\": \"income\",\n  \"amount\": 75000.00,\n  \"description\": \"Зарплата за март\",\n  \"date\": \"2025-03-01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions"
+              ]
+            },
+            "description": "Создание транзакции дохода. Должен обновиться баланс счёта. ID сохраняется."
+          }
+        },
+        {
+          "name": "Create Transaction — Расход",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 — расход создан', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Тип транзакции — expense', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.type).to.eql('expense');",
+                  "});",
+                  "",
+                  "pm.test('Сумма положительная', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.amount).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account_id\": {{account_id}},\n  \"type\": \"expense\",\n  \"amount\": 3500.50,\n  \"description\": \"Продукты в Пятёрочке\",\n  \"date\": \"2025-03-05\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions"
+              ]
+            },
+            "description": "Создание транзакции расхода. Без category_id — проверим, что категория может быть null."
+          }
+        },
+        {
+          "name": "Create Transaction — Повторяющаяся",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Транзакция — recurring', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.is_recurring).to.eql(true);",
+                  "    pm.expect(json.recurrence_rule).to.eql('FREQ=MONTHLY;BYMONTHDAY=1');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account_id\": {{account_id}},\n  \"type\": \"expense\",\n  \"amount\": 5000.00,\n  \"description\": \"Аренда квартиры\",\n  \"date\": \"2025-03-01\",\n  \"is_recurring\": true,\n  \"recurrence_rule\": \"FREQ=MONTHLY;BYMONTHDAY=1\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions"
+              ]
+            },
+            "description": "Создание повторяющейся транзакции с RRULE."
+          }
+        },
+        {
+          "name": "Get All Transactions — Список транзакций",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 — список получен', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Ответ — массив транзакций', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an('array');",
+                  "    pm.expect(json.length).to.be.at.least(1);",
+                  "});",
+                  "",
+                  "pm.test('Каждый элемент — валидная транзакция', function () {",
+                  "    const json = pm.response.json();",
+                  "    json.forEach(tx => {",
+                  "        pm.expect(tx).to.have.property('id');",
+                  "        pm.expect(tx).to.have.property('type');",
+                  "        pm.expect(tx).to.have.property('amount');",
+                  "        pm.expect(tx.type).to.be.oneOf(['income', 'expense']);",
+                  "    });",
+                  "});",
+                  "",
+                  "pm.test('Время ответа < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/transactions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions"
+              ]
+            },
+            "description": "Получение списка всех транзакций."
+          }
+        },
+        {
+          "name": "Get Transactions — Фильтр по дате",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Все транзакции в указанном диапазоне дат', function () {",
+                  "    const json = pm.response.json();",
+                  "    const dateFrom = new Date('2025-03-01');",
+                  "    const dateTo = new Date('2025-03-31');",
+                  "    json.forEach(tx => {",
+                  "        const txDate = new Date(tx.date);",
+                  "        pm.expect(txDate >= dateFrom && txDate <= dateTo).to.eql(true);",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/transactions?date_from=2025-03-01&date_to=2025-03-31&type=expense",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "date_from",
+                  "value": "2025-03-01"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2025-03-31"
+                },
+                {
+                  "key": "type",
+                  "value": "expense"
+                }
+              ]
+            },
+            "description": "Фильтрация транзакций по дате и типу."
+          }
+        },
+        {
+          "name": "Update Transaction — Обновить транзакцию",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 — транзакция обновлена', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Описание и сумма изменились', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.description).to.eql('Зарплата за март (исправлено)');",
+                  "    pm.expect(json.amount).to.eql(80000.00);",
+                  "});",
+                  "",
+                  "pm.test('Время ответа < 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 80000.00,\n  \"description\": \"Зарплата за март (исправлено)\",\n  \"date\": \"2025-03-01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/transactions/{{transaction_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions",
+                "{{transaction_id}}"
+              ]
+            },
+            "description": "Обновление транзакции. Баланс счёта должен скорректироваться."
+          }
+        },
+        {
+          "name": "Delete Transaction — Удалить транзакцию",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204 — транзакция удалена', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('Тело ответа пустое', function () {",
+                  "    pm.expect(pm.response.text()).to.eql('');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/transactions/{{transaction_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions",
+                "{{transaction_id}}"
+              ]
+            },
+            "description": "Удаление транзакции. Сумма должна вернуться на счёт."
+          }
+        },
+        {
+          "name": "Get Transaction — Ошибка: не найдена",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 — транзакция не найдена', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Ответ содержит detail', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('detail');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/transactions/999999",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "transactions",
+                "999999"
+              ]
+            },
+            "description": "Запрос несуществующей транзакции — ожидается 404."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health & Root",
+      "description": "Служебные эндпоинты без авторизации",
+      "item": [
+        {
+          "name": "Root — Корень API",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Ответ содержит message', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property('message');",
+                  "    pm.expect(json.message).to.include('Welcome');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Проверка, что сервер работает."
+          }
+        },
+        {
+          "name": "Health — Проверка здоровья",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Сервер здоров', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('ok');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Проверка работоспособности сервера."
+          }
+        }
+      ]
+    }
+  ]
+}
