@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Integer, String, DateTime, JSON
+from sqlalchemy import Column, Integer, String, DateTime, BigInteger, JSON
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -14,14 +14,15 @@ class User(Base):
         primary_key=True,
         index=True
     )
-    email = Column(
-        String(255),
+    telegram_id = Column(
+        BigInteger,
         unique=True,
         index=True,
         nullable=False
     )
-    hashed_password = Column(String(255), nullable=False)
-    full_name = Column(String(100), nullable=True)
+    username = Column(String(255), nullable=True)
+    first_name = Column(String(255), nullable=True)
+    last_name = Column(String(255), nullable=True)
     settings = Column(JSON, default=dict, nullable=True)
     created_at = Column(
         DateTime(timezone=True),
@@ -49,4 +50,4 @@ class User(Base):
     )
 
     def __repr__(self):
-        return f"<User(id={self.id}, email={self.email})>"
+        return f"<User(id={self.id}, telegram_id={self.telegram_id})>"

@@ -1,5 +1,5 @@
 from app.schemas.user import (
-    UserRegister, UserLogin, UserResponse, UserSettings, TokenResponse
+    TelegramAuth, UserResponse, UserSettings, TokenResponse
 )
 from app.schemas.account import (
     AccountCreate, AccountUpdate, AccountResponse
@@ -12,7 +12,7 @@ from app.schemas.transaction import (
 )
 
 __all__ = [
-    "UserRegister", "UserLogin", "UserResponse",
+    "TelegramAuth", "UserResponse",
     "UserSettings", "TokenResponse",
     "AccountCreate", "AccountUpdate", "AccountResponse",
     "CategoryCreate", "CategoryUpdate", "CategoryResponse",

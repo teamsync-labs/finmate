@@ -17,11 +17,6 @@ class Settings(BaseSettings):
         "http://localhost:5173",
     ]
 
-    PASSWORD_MIN_LENGTH: int = 8
-    PASSWORD_REQUIRE_UPPERCASE: bool = True
-    PASSWORD_REQUIRE_LOWERCASE: bool = True
-    PASSWORD_REQUIRE_DIGIT: bool = True
-
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

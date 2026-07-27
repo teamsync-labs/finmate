@@ -17,49 +17,24 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT-токен, полученный через /auth/login
+      description: JWT-токен, полученный через /auth/telegram
 
   schemas:
-    # --- Пользователь и регистрация ---
-    UserRegister:
+    # --- Аутентификация через Telegram ---
+    TelegramAuth:
       type: object
-      required: [email, password]
+      required: [telegram_id]
       properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          minLength: 6
-        full_name:
-          type: string
-          maxLength: 100
-
-    UserLogin:
-      type: object
-      required: [email, password]
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-
-    UserResponse:
-      type: object
-      properties:
-        id:
+        telegram_id:
           type: integer
-        email:
+          description: ID пользователя в Telegram
+        username:
           type: string
-          format: email
-        full_name:
+          description: Telegram username (без @)
+        first_name:
           type: string
-        settings:
-          $ref: '#/components/schemas/UserSettings'
-        created_at:
+        last_name:
           type: string
-          format: date-time
 
     UserSettings:
       type: object
@@ -70,6 +45,28 @@ components:
         language:
           type: string
           example: ru
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        telegram_id:
+          type: integer
+        username:
+          type: string
+          nullable: true
+        first_name:
+          type: string
+          nullable: true
+        last_name:
+          type: string
+          nullable: true
+        settings:
+          $ref: '#/components/schemas/UserSettings'
+        created_at:
+          type: string
+          format: date-time
 
     TokenResponse:
       type: object
@@ -311,53 +308,28 @@ components:
 # --------------------------------------------------------------------------
 paths:
   # ========================= Аутентификация =========================
-  /auth/register:
+  /auth/telegram:
     post:
       tags: [Auth]
-      summary: Регистрация нового пользователя
+      summary: Вход/регистрация через Telegram
+      description: >
+        Если пользователь с таким telegram_id не найден — создаётся новый.
+        Если найден — обновляются данные профиля и выдаётся JWT-токен.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRegister'
-      responses:
-        '201':
-          description: Пользователь создан
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponse'
-        '400':
-          description: Ошибка валидации или email уже занят
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /auth/login:
-    post:
-      tags: [Auth]
-      summary: Вход и получение JWT-токена
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserLogin'
+              $ref: '#/components/schemas/TelegramAuth'
       responses:
         '200':
-          description: Успешный вход
+          description: Успешная аутентификация
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/TokenResponse'
-        '401':
-          description: Неверный email или пароль
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Ошибка валидации
 
   # ========================= Пользователи =========================
   /users/me:

@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "FinSight API",
-    "description": "Коллекция для тестирования API финансового помощника FinSight\n\n## Предусловия\n1. Запустите сервер: `uvicorn app.main:app --reload`\n2. Создайте окружение Postman с переменной `base_url` = `http://localhost:8000`\n3. Импортируйте коллекцию\n4. Запускайте запросы последовательно — токен будет автоматически сохраняться\n\n## Порядок запуска\n1. **Auth → Register** — создание пользователя\n2. **Auth → Login** — получение JWT (автоматически сохраняется в коллекцию)\n3. Остальные — в любом порядке",
+    "description": "Коллекция для тестирования API финансового помощника FinSight\n\n## Предусловия\n1. Запустите сервер: `uvicorn app.main:app --reload`\n2. Создайте окружение Postman с переменной `base_url` = `http://localhost:8000`\n3. Импортируйте коллекцию\n4. Сначала выполните **Auth → Telegram Auth** — токен автоматически сохранится\n5. Остальные запросы — в любом порядке\n\n## Аутентификация\nВся аутентификация — через Telegram. Один эндпоинт `/auth/telegram`:\n- Если `telegram_id` не найден — создаётся новый пользователь\n- Если найден — обновляются данные профиля и выдаётся JWT-токен",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -26,94 +26,25 @@
       "type": "string"
     },
     {
-      "key": "user_email",
-      "value": "test@example.com",
-      "type": "string"
-    },
-    {
-      "key": "user_password",
-      "value": "TestPass123",
+      "key": "telegram_id",
+      "value": "123456789",
       "type": "string"
     }
   ],
   "item": [
     {
       "name": "Auth",
-      "description": "Регистрация и аутентификация пользователей",
+      "description": "Аутентификация через Telegram (единый эндпоинт для входа и регистрации)",
       "item": [
         {
-          "name": "Register — Регистрация пользователя",
+          "name": "Telegram Auth — Вход/Регистрация",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "// Проверка статус-кода",
-                  "pm.test('Status 201 — пользователь создан', function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "// Проверка структуры ответа",
-                  "pm.test('Ответ содержит данные пользователя', function () {",
-                  "    const json = pm.response.json();",
-                  "    pm.expect(json).to.have.property('id');",
-                  "    pm.expect(json).to.have.property('email');",
-                  "    pm.expect(json).to.have.property('full_name');",
-                  "    pm.expect(json).to.have.property('settings');",
-                  "    pm.expect(json).to.have.property('created_at');",
-                  "    pm.expect(json.email).to.eql(pm.request.body.json.email);",
-                  "});",
-                  "",
-                  "// Проверка settings по умолчанию",
-                  "pm.test('Настройки по умолчанию — RUB и ru', function () {",
-                  "    const json = pm.response.json();",
-                  "    pm.expect(json.settings.currency).to.eql('RUB');",
-                  "    pm.expect(json.settings.language).to.eql('ru');",
-                  "});",
-                  "",
-                  "// Сохраняем email для логина",
-                  "pm.collectionVariables.set('user_email', pm.request.body.json.email);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": "{{user_email}}",\n  \"password\": "{{user_password}}",\n  \"full_name\": "Тестовый Пользователь"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/auth/register",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "register"
-              ]
-            },
-            "description": "Создание нового пользователя. Email и пароль можно переопределить через переменные коллекции."
-          }
-        },
-        {
-          "name": "Login — Вход в систему",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "// Проверка статус-кода",
-                  "pm.test('Status 200 — успешный вход', function () {",
+                  "pm.test('Status 200 — успешная аутентификация', function () {",
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
@@ -147,10 +78,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": "{{user_email}}",\n  \"password\": "{{user_password}}"\n}"
+              "raw": "{\n  \"telegram_id\": {{telegram_id}},\n  \"username\": \"test_user\",\n  \"first_name\": \"Тест\",\n  \"last_name\": \"Пользователь\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/v1/auth/login",
+              "raw": "{{base_url}}/api/v1/auth/telegram",
               "host": [
                 "{{base_url}}"
               ],
@@ -158,26 +89,27 @@
                 "api",
                 "v1",
                 "auth",
-                "login"
+                "telegram"
               ]
             },
-            "description": "Вход с email и паролем. JWT-токен автоматически сохраняется в переменную `token` коллекции."
+            "description": "Вход или регистрация через Telegram. JWT-токен автоматически сохраняется в переменную `token` коллекции."
           }
         },
         {
-          "name": "Register — Ошибка: дубль email",
+          "name": "Telegram Auth — Повторный вызов (обновление профиля)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('Status 400 — email уже занят', function () {",
-                  "    pm.response.to.have.status(400);",
+                  "pm.test('Status 200 — токен получен', function () {",
+                  "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test('Ответ содержит сообщение об ошибке', function () {",
+                  "pm.test('Токен обновлён', function () {",
                   "    const json = pm.response.json();",
-                  "    pm.expect(json).to.have.property('detail');",
+                  "    pm.expect(json).to.have.property('access_token');",
+                  "    pm.collectionVariables.set('token', json.access_token);",
                   "});"
                 ],
                 "type": "text/javascript"
@@ -194,10 +126,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": "{{user_email}}",\n  \"password\": "{{user_password}}",\n  \"full_name": "Дубликат"\n}"
+              "raw": "{\n  \"telegram_id\": {{telegram_id}},\n  \"username\": \"test_user\",\n  \"first_name\": \"Тест\",\n  \"last_name\": \"Обновлённый\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/v1/auth/register",
+              "raw": "{{base_url}}/api/v1/auth/telegram",
               "host": [
                 "{{base_url}}"
               ],
@@ -205,57 +137,10 @@
                 "api",
                 "v1",
                 "auth",
-                "register"
+                "telegram"
               ]
             },
-            "description": "Повторная регистрация с тем же email должна вернуть 400."
-          }
-        },
-        {
-          "name": "Login — Ошибка: неверный пароль",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status 401 — неверный пароль', function () {",
-                  "    pm.response.to.have.status(401);",
-                  "});",
-                  "",
-                  "pm.test('Ответ содержит сообщение об ошибке', function () {",
-                  "    const json = pm.response.json();",
-                  "    pm.expect(json).to.have.property('detail');",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": "{{user_email}}",\n  \"password\": "WrongPassword99!"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/v1/auth/login",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "login"
-              ]
-            },
-            "description": "Вход с неверным паролем должен вернуть 401."
+            "description": "Повторный вызов с другими данными — профиль обновится, а не создастся новый пользователь."
           }
         }
       ]
@@ -275,14 +160,16 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "",
-                  "pm.test('Ответ содержит данные пользователя', function () {",
+                  "pm.test('Ответ содержит данные пользователя (Telegram)', function () {",
                   "    const json = pm.response.json();",
                   "    pm.expect(json).to.have.property('id');",
-                  "    pm.expect(json).to.have.property('email');",
-                  "    pm.expect(json).to.have.property('full_name');",
+                  "    pm.expect(json).to.have.property('telegram_id');",
+                  "    pm.expect(json).to.have.property('username');",
+                  "    pm.expect(json).to.have.property('first_name');",
+                  "    pm.expect(json).to.have.property('last_name');",
                   "    pm.expect(json).to.have.property('settings');",
                   "    pm.expect(json).to.have.property('created_at');",
-                  "    pm.expect(json.email).to.eql(pm.collectionVariables.get('user_email'));",
+                  "    pm.expect(json.telegram_id).to.eql(parseInt(pm.collectionVariables.get('telegram_id')));",
                   "});",
                   "",
                   "pm.test('Время ответа < 500ms', function () {",
@@ -688,7 +575,7 @@
                 "{{account_id}}"
               ]
             },
-            "description": "Удаление счёта. После удаления повторите Create Account, чтобы создать новый счёт для тестов."
+            "description": "Удаление счёта."
           }
         },
         {
