@@ -14,7 +14,7 @@ class TestRoot:
         assert response.status_code == 200
         data = response.json()
         assert "message" in data
-        assert "FinSight" in data["message"]
+        assert "FinMate" in data["message"]
 
 
 class TestHealth:

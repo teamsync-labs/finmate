@@ -4,16 +4,17 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
 from app.api.v1 import auth, users, accounts, categories, transactions
+from app.admin import register_admin
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if settings.DEBUG:
-        Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
     yield
 
 
@@ -37,11 +38,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Admin session middleware (required by SQLAdmin for auth)
+app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
+
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(users.router, prefix=settings.API_V1_PREFIX)
 app.include_router(accounts.router, prefix=settings.API_V1_PREFIX)
 app.include_router(categories.router, prefix=settings.API_V1_PREFIX)
 app.include_router(transactions.router, prefix=settings.API_V1_PREFIX)
+
+# Register admin panel
+register_admin(app)
 
 
 original_openapi = app.openapi

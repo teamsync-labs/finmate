@@ -6,19 +6,45 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Для разработки монтируем код для hot-reload
       - ./backend:/app
     environment:
-      # App
-      - APP_NAME=FinSight API
-      - DEBUG=true
+      - APP_NAME=FinMate API
+      - DEBUG=${DEBUG}
       - API_V1_PREFIX=/api/v1
-      # Database
-      - DATABASE_URL=sqlite:///./finsight.db
-      # JWT — переопределить в .env или production-окружении
-      - SECRET_KEY=super-secret-key-change-in-production
+      - SECRET_KEY=${SECRET_KEY} 
       - ALGORITHM=HS256
       - ACCESS_TOKEN_EXPIRE_MINUTES=10080
-      # CORS
       - CORS_ORIGINS=["http://localhost:8000","http://localhost:5173"]
+    depends_on:
+      - db 
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  nginx:
+    build:
+      context: ./infra
+      dockerfile: Dockerfile
+    ports:
+      - "8088:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-finsight}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-finsight}
+      - POSTGRES_DB=${POSTGRES_DB:-finsight}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finsight"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
