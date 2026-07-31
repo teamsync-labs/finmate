@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "FinSight API",
+    "name": "FinMate API",
     "description": "Коллекция для тестирования API финансового помощника FinSight\n\n## Предусловия\n1. Запустите сервер: `uvicorn app.main:app --reload`\n2. Создайте окружение Postman с переменной `base_url` = `http://localhost:8000`\n3. Импортируйте коллекцию\n4. Сначала выполните **Auth → Telegram Auth** — токен автоматически сохранится\n5. Остальные запросы — в любом порядке\n\n## Аутентификация\nВся аутентификация — через Telegram. Один эндпоинт `/auth/telegram`:\n- Если `telegram_id` не найден — создаётся новый пользователь\n- Если найден — обновляются данные профиля и выдаётся JWT-токен",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },

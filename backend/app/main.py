@@ -8,7 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal
-from app.api.v1 import auth, users, accounts, categories, transactions
+from app.api.v1 import auth, accounts, categories, transactions
 from app.admin import register_admin
 
 
@@ -42,7 +42,6 @@ app.add_middleware(
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
-app.include_router(users.router, prefix=settings.API_V1_PREFIX)
 app.include_router(accounts.router, prefix=settings.API_V1_PREFIX)
 app.include_router(categories.router, prefix=settings.API_V1_PREFIX)
 app.include_router(transactions.router, prefix=settings.API_V1_PREFIX)
