@@ -10,8 +10,6 @@ class TelegramAuth(BaseModel):
     """Схема для входа/регистрации через Telegram."""
     telegram_id: int
     username: Optional[str] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
 
 
 class UserSettings(BaseModel):
@@ -23,14 +21,15 @@ class UserResponse(BaseModel):
     id: int
     telegram_id: int
     username: Optional[str] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
     settings: Optional[UserSettings] = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
 
 
-class TokenResponse(BaseModel):
+class AuthResponse(BaseModel):
+    """Ответ аутентификации: токен + полные данные."""
     access_token: str
     token_type: str = "bearer"
+    telegram_id: int
+    username: Optional[str] = None

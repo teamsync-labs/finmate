@@ -7,7 +7,7 @@ from app.core.security import (
 )
 from app.models.user import User
 from app.schemas.user import (
-    TelegramAuth, TokenResponse,
+    TelegramAuth, AuthResponse,
 )
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
@@ -15,10 +15,13 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post(
     "/telegram",
-    response_model=TokenResponse,
+    response_model=AuthResponse,
     status_code=status.HTTP_200_OK,
 )
-def auth_telegram(payload: TelegramAuth, db: Session = Depends(get_db)):
+def auth_telegram(
+    payload: TelegramAuth,
+    db: Session = Depends(get_db)
+):
     """
     Аутентификация через Telegram.
     Если пользователь с таким telegram_id не найден — создаётся новый.
@@ -30,19 +33,21 @@ def auth_telegram(payload: TelegramAuth, db: Session = Depends(get_db)):
     if not user:
         user = User(
             telegram_id=payload.telegram_id,
-            username=payload.username,
-            first_name=payload.first_name,
-            last_name=payload.last_name,
+            username=payload.username or str(payload.telegram_id),
             settings={"currency": "RUB", "language": "ru"},
         )
         db.add(user)
         db.commit()
         db.refresh(user)
 
-    user.username = payload.username
-    user.first_name = payload.first_name
-    user.last_name = payload.last_name
-    db.commit()
+    if payload.username:
+        user.username = payload.username
+        db.commit()
 
     access_token = create_access_token({"sub": user.id})
-    return TokenResponse(access_token=access_token)
+    return AuthResponse(
+        access_token=access_token,
+        id=user.id,
+        telegram_id=user.telegram_id,
+        username=user.username,
+    )

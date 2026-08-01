@@ -20,10 +20,15 @@ class User(Base):
         index=True,
         nullable=False
     )
-    username = Column(String(255), nullable=True)
-    first_name = Column(String(255), nullable=True)
-    last_name = Column(String(255), nullable=True)
-    settings = Column(JSON, default=dict, nullable=True)
+    username = Column(
+        String(255),
+        nullable=False  # False по дуфолту но лучше явное чем нет.
+    )
+    settings = Column(
+        JSON,
+        default=dict,
+        nullable=True
+    )
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc)

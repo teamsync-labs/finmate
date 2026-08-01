@@ -24,15 +24,11 @@ class UserAdmin(ModelView, model=User):
         User.id,
         User.telegram_id,
         User.username,
-        User.first_name,
-        User.last_name,
         User.created_at,
     ]
     column_searchable_list = [
         User.username,
         User.telegram_id,
-        User.first_name,
-        User.last_name
     ]
     column_sortable_list = [
         User.id,
@@ -45,8 +41,6 @@ class UserAdmin(ModelView, model=User):
         User.id: "ID",
         User.telegram_id: "Telegram ID",
         User.username: "Username",
-        User.first_name: "Имя",
-        User.last_name: "Фамилия",
         User.settings: "Настройки",
         User.created_at: "Создан",
     }

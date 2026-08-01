@@ -27,14 +27,10 @@ components:
       properties:
         telegram_id:
           type: integer
-          description: ID пользователя в Telegram
+          description: ID пользователя в Telegram (обязательное поле, вся валидация идёт по нему)
         username:
           type: string
-          description: Telegram username (без @)
-        first_name:
-          type: string
-        last_name:
-          type: string
+          description: Telegram username (без @). Если не передан — backend подставит str(telegram_id)
 
     UserSettings:
       type: object
@@ -56,10 +52,26 @@ components:
         username:
           type: string
           nullable: true
-        first_name:
+        settings:
+          $ref: '#/components/schemas/UserSettings'
+        created_at:
           type: string
-          nullable: true
-        last_name:
+          format: date-time
+
+    AuthResponse:
+      type: object
+      required: [access_token, token_type, id, telegram_id]
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+        id:
+          type: integer
+        telegram_id:
+          type: integer
+        username:
           type: string
           nullable: true
         settings:
@@ -67,15 +79,6 @@ components:
         created_at:
           type: string
           format: date-time
-
-    TokenResponse:
-      type: object
-      properties:
-        access_token:
-          type: string
-        token_type:
-          type: string
-          example: bearer
 
     # --- Счета ---
     AccountCreate:
@@ -313,8 +316,10 @@ paths:
       tags: [Auth]
       summary: Вход/регистрация через Telegram
       description: >
-        Если пользователь с таким telegram_id не найден — создаётся новый.
-        Если найден — обновляются данные профиля и выдаётся JWT-токен.
+        Если пользователь с таким telegram_id не найден — создаётся новый,
+        username по умолчанию равен str(telegram_id).
+        Если найден — обновляется username (если передан).
+        В ответе возвращаются JWT-токен и полные данные пользователя.
       requestBody:
         required: true
         content:
@@ -327,26 +332,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenResponse'
+                $ref: '#/components/schemas/AuthResponse'
         '422':
           description: Ошибка валидации
-
-  # ========================= Пользователи =========================
-  /users/me:
-    get:
-      tags: [Users]
-      summary: Получить профиль текущего пользователя
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: Данные пользователя
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserResponse'
-        '401':
-          description: Не авторизован
 
   # ========================= Счета =================================
   /accounts:
