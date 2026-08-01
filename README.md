@@ -39,6 +39,7 @@ infra/               деплой и окружения
 ## Документация
 
 - [Vision](docs/vision.md)
+- [Yandex Cloud API: OCR чеков + LLM](docs/yandex-api-quickstart.md)
 - [Участие в разработке](CONTRIBUTING.md)
 
 ## Локальный запуск
