@@ -3,12 +3,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import logging
 from sqlalchemy import text
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import settings
-from app.core.database import engine, Base, SessionLocal
-from app.api.v1 import auth, accounts, categories, transactions
+from app.core.database import engine, Base
+from app.api.v1 import auth, accounts
 from app.admin import register_admin
 
 
@@ -43,8 +44,7 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(accounts.router, prefix=settings.API_V1_PREFIX)
-app.include_router(categories.router, prefix=settings.API_V1_PREFIX)
-app.include_router(transactions.router, prefix=settings.API_V1_PREFIX)
+
 
 # Register admin panel
 register_admin(app)
@@ -53,32 +53,8 @@ register_admin(app)
 original_openapi = app.openapi
 
 
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
-    openapi_schema = original_openapi()
-    openapi_schema.setdefault(
-        "components", {}
-    ).setdefault("securitySchemes", {})
-    openapi_schema["components"]["securitySchemes"]["bearerAuth"] = {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "JWT token obtained via /auth/login",
-    }
-    openapi_schema.setdefault(
-        "security", []
-    ).insert(0, {"bearerAuth": []})
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
-
-
-app.openapi = custom_openapi
-
-
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    import logging
     logger = logging.getLogger(__name__)
     logger.exception("Unhandled exception: %s", exc)
 
@@ -95,15 +71,14 @@ def root():
 
 @app.get("/health")
 def health():
-    db_ok = False
+    """Проверка здоровья сервиса и состояния БД."""
     try:
-        with SessionLocal() as db:
-            db.execute(text("SELECT 1"))
-            db_ok = True
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        database = "connected"
+        status = "ok"
     except Exception:
-        db_ok = False
+        database = "disconnected"
+        status = "degraded"
 
-    return {
-        "status": "ok" if db_ok else "degraded",
-        "database": "connected" if db_ok else "disconnected",
-    }
+    return {"status": status, "database": database}

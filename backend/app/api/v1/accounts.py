@@ -7,115 +7,117 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.core.security import get_current_user
 from app.models.user import User
-from app.models.account import Account
-from app.schemas.account import (
-    AccountCreate,
-    AccountUpdate,
-    AccountResponse
+from app.models.expenses import Expenses
+from app.schemas.expense import (
+    ExpenseCreate,
+    ExpenseUpdate,
+    ExpenseResponse,
 )
 
-router = APIRouter(prefix="/accounts", tags=["Accounts"])
+router = APIRouter(prefix="/expenses", tags=["Expenses"])
 
 
-@router.get("", response_model=list[AccountResponse])
-def list_accounts(
+@router.get("", response_model=list[ExpenseResponse])
+def list_expenses(
+    type: str | None = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Get all accounts for the current user."""
-    accounts = db.query(Account).filter(
-        Account.user_id == current_user.id,
-    ).all()
-    return accounts
+    """Get all expenses for the current user."""
+    query = db.query(Expenses).filter(
+        Expenses.user_id == current_user.id,
+    )
+    if type is not None:
+        query = query.filter(Expenses.type == type)
+    return query.all()
 
 
 @router.post(
     "",
-    response_model=AccountResponse,
+    response_model=ExpenseResponse,
     status_code=status.HTTP_201_CREATED
 )
-def create_account(
-    payload: AccountCreate,
+def create_expense(
+    payload: ExpenseCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Create a new account."""
-    account = Account(
+    """Create a new expense."""
+    expense = Expenses(
         user_id=current_user.id,
-        name=payload.name,
+        expense_name=payload.expense_name,
+        amount=payload.amount,
         type=payload.type,
-        balance=payload.balance,
         currency=payload.currency,
-        credit_limit=payload.credit_limit,
     )
-    db.add(account)
+    db.add(expense)
     db.commit()
-    db.refresh(account)
-    return account
+    db.refresh(expense)
+    return expense
 
 
-@router.get("/{account_id}", response_model=AccountResponse)
-def get_account(
-    account_id: int,
+@router.get("/{expense_id}", response_model=ExpenseResponse)
+def get_expense(
+    expense_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Get a specific account by ID."""
-    account = db.query(Account).filter(
-        Account.id == account_id,
-        Account.user_id == current_user.id,
+    """Get a specific expense by ID."""
+    expense = db.query(Expenses).filter(
+        Expenses.id == expense_id,
+        Expenses.user_id == current_user.id,
     ).first()
-    if not account:
+    if not expense:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found",
+            detail="Expense not found",
         )
-    return account
+    return expense
 
 
-@router.put("/{account_id}", response_model=AccountResponse)
-def update_account(
-    account_id: int,
-    payload: AccountUpdate,
+@router.put("/{expense_id}", response_model=ExpenseResponse)
+def update_expense(
+    expense_id: int,
+    payload: ExpenseUpdate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Update an account."""
-    account = db.query(Account).filter(
-        Account.id == account_id,
-        Account.user_id == current_user.id,
+    """Update an expense."""
+    expense = db.query(Expenses).filter(
+        Expenses.id == expense_id,
+        Expenses.user_id == current_user.id,
     ).first()
-    if not account:
+    if not expense:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found",
+            detail="Expense not found",
         )
 
     update_data = payload.model_dump(exclude_unset=True)
     for field, value in update_data.items():
-        setattr(account, field, value)
+        setattr(expense, field, value)
 
     db.commit()
-    db.refresh(account)
-    return account
+    db.refresh(expense)
+    return expense
 
 
-@router.delete("/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_account(
-    account_id: int,
+@router.delete("/{expense_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_expense(
+    expense_id: int,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Delete an account."""
-    account = db.query(Account).filter(
-        Account.id == account_id,
-        Account.user_id == current_user.id,
+    """Delete an expense."""
+    expense = db.query(Expenses).filter(
+        Expenses.id == expense_id,
+        Expenses.user_id == current_user.id,
     ).first()
-    if not account:
+    if not expense:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Account not found",
+            detail="Expense not found",
         )
 
-    db.delete(account)
+    db.delete(expense)
     db.commit()

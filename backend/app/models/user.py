@@ -35,20 +35,8 @@ class User(Base):
     )
 
     # Relationships
-    accounts = relationship(
-        "Account",
-        back_populates="user",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-    )
-    categories = relationship(
-        "Category",
-        back_populates="user",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-    )
-    transactions = relationship(
-        "Transaction",
+    expenses = relationship(
+        "Expenses",
         back_populates="user",
         cascade="all, delete-orphan",
         passive_deletes=True,
