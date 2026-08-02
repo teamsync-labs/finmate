@@ -1,14 +1,14 @@
 openapi: 3.0.3
 info:
   title: FinSight API
-  description: API финансового помощника с автоматической категоризацией и учётом транзакций
+  description: API финансового помощника с автоматической категоризацией и учётом расходов
   version: 1.0.0
   contact:
     name: Команда FinSight
     email: dev@finsight.example.com
 
 servers:
-  - url: http://localhost:8000/api/v1
+  - url: http://localhost:8000
     description: Локальный сервер разработки
 
 components:
@@ -17,7 +17,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT-токен, полученный через /auth/telegram
+      description: JWT-токен, полученный через POST /api/v1/auth/telegram
 
   schemas:
     # --- Аутентификация через Telegram ---
@@ -30,247 +30,85 @@ components:
           description: ID пользователя в Telegram (обязательное поле, вся валидация идёт по нему)
         username:
           type: string
-          description: Telegram username (без @). Если не передан — backend подставит str(telegram_id)
-
-    UserSettings:
-      type: object
-      properties:
-        currency:
-          type: string
-          example: RUB
-        language:
-          type: string
-          example: ru
-
-    UserResponse:
-      type: object
-      properties:
-        id:
-          type: integer
-        telegram_id:
-          type: integer
-        username:
-          type: string
           nullable: true
-        settings:
-          $ref: '#/components/schemas/UserSettings'
-        created_at:
-          type: string
-          format: date-time
+          description: Telegram username (без @). Если не передан — backend подставит str(telegram_id)
 
     AuthResponse:
       type: object
-      required: [access_token, token_type, id, telegram_id]
+      required: [access_token, token_type, telegram_id]
       properties:
         access_token:
           type: string
+          description: JWT-токен для авторизации в защищённых эндпоинтах
         token_type:
           type: string
           example: bearer
-        id:
-          type: integer
         telegram_id:
           type: integer
         username:
           type: string
           nullable: true
-        settings:
-          $ref: '#/components/schemas/UserSettings'
-        created_at:
-          type: string
-          format: date-time
 
-    # --- Счета ---
-    AccountCreate:
+    # --- Расходы ---
+    ExpenseCreate:
       type: object
-      required: [name, type, balance]
+      required: [expense_name]
       properties:
-        name:
+        expense_name:
           type: string
           maxLength: 100
-        type:
-          type: string
-          enum: [cash, bank, credit, investment, savings]
-        balance:
+          description: Название расхода (обязательное, не может быть пустым)
+        amount:
           type: number
           format: double
-          example: 15000.50
+          default: 0.0
+          minimum: 0
+          description: Сумма расхода
+        type:
+          type: string
+          enum: [general, food, transport, housing, utilities, entertainment, health, education, shopping, other]
+          default: general
+          description: Категория расхода
         currency:
           type: string
+          maxLength: 3
           default: RUB
-        credit_limit:
-          type: number
-          format: double
-          nullable: true
+          description: ISO-код валюты (3 буквы, приводится к верхнему регистру)
 
-    AccountUpdate:
+    ExpenseUpdate:
       type: object
+      description: Все поля опциональны — обновляются только переданные
       properties:
-        name:
-          type: string
-        balance:
-          type: number
-          format: double
-        is_archived:
-          type: boolean
-        credit_limit:
-          type: number
-          nullable: true
-
-    AccountResponse:
-      type: object
-      properties:
-        id:
-          type: integer
-        user_id:
-          type: integer
-        name:
-          type: string
-        type:
-          type: string
-        balance:
-          type: number
-        currency:
-          type: string
-        is_archived:
-          type: boolean
-        credit_limit:
-          type: number
-          nullable: true
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-
-    # --- Категории ---
-    CategoryCreate:
-      type: object
-      required: [name, type]
-      properties:
-        name:
+        expense_name:
           type: string
           maxLength: 100
-        type:
-          type: string
-          enum: [income, expense]
-        parent_id:
-          type: integer
-          nullable: true
-        icon:
-          type: string
-        color:
-          type: string
-
-    CategoryUpdate:
-      type: object
-      properties:
-        name:
-          type: string
-        icon:
-          type: string
-        color:
-          type: string
-        parent_id:
-          type: integer
-          nullable: true
-
-    CategoryResponse:
-      type: object
-      properties:
-        id:
-          type: integer
-        user_id:
-          type: integer
-        name:
-          type: string
-        type:
-          type: string
-        parent_id:
-          type: integer
-          nullable: true
-        icon:
-          type: string
-        color:
-          type: string
-        is_system:
-          type: boolean
-
-    # --- Транзакции ---
-    TransactionCreate:
-      type: object
-      required: [account_id, type, amount, date]
-      properties:
-        account_id:
-          type: integer
-        category_id:
-          type: integer
-          nullable: true
-          description: Если не указана, категория подбирается ML-сервисом
-        type:
-          type: string
-          enum: [income, expense]
         amount:
           type: number
           format: double
-          minimum: 0.01
-        description:
-          type: string
-          maxLength: 500
-        date:
-          type: string
-          format: date
-        is_recurring:
-          type: boolean
-          default: false
-        recurrence_rule:
-          type: string
-          description: RRULE для повторяющихся транзакций
-
-    TransactionUpdate:
-      type: object
-      properties:
-        category_id:
-          type: integer
-          nullable: true
-        amount:
-          type: number
-          format: double
-        description:
-          type: string
-        date:
-          type: string
-          format: date
-
-    TransactionResponse:
-      type: object
-      properties:
-        id:
-          type: integer
-        user_id:
-          type: integer
-        account_id:
-          type: integer
-        category_id:
-          type: integer
-          nullable: true
+          minimum: 0
         type:
           type: string
-        amount:
-          type: number
+          enum: [general, food, transport, housing, utilities, entertainment, health, education, shopping, other]
         currency:
           type: string
-        description:
+          maxLength: 3
+
+    ExpenseResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        expense_name:
           type: string
-        notes:
+        amount:
+          type: number
+          format: double
+        type:
           type: string
-        date:
-          type: string
-          format: date
-        is_recurring:
-          type: boolean
-        recurrence_rule:
+          nullable: true
+        currency:
           type: string
         created_at:
           type: string
@@ -286,32 +124,18 @@ components:
           type: string
 
   parameters:
-    accountIdParam:
-      name: account_id
+    expenseIdParam:
+      name: expense_id
       in: path
       required: true
       schema:
         type: integer
-      description: ID счёта
-    categoryIdParam:
-      name: category_id
-      in: path
-      required: true
-      schema:
-        type: integer
-      description: ID категории
-    transactionIdParam:
-      name: transaction_id
-      in: path
-      required: true
-      schema:
-        type: integer
-      description: ID транзакции
+      description: ID расхода
 
 # --------------------------------------------------------------------------
 paths:
   # ========================= Аутентификация =========================
-  /auth/telegram:
+  /api/v1/auth/telegram:
     post:
       tags: [Auth]
       summary: Вход/регистрация через Telegram
@@ -319,7 +143,7 @@ paths:
         Если пользователь с таким telegram_id не найден — создаётся новый,
         username по умолчанию равен str(telegram_id).
         Если найден — обновляется username (если передан).
-        В ответе возвращаются JWT-токен и полные данные пользователя.
+        В ответе возвращаются JWT-токен и данные пользователя.
       requestBody:
         required: true
         content:
@@ -335,306 +159,195 @@ paths:
                 $ref: '#/components/schemas/AuthResponse'
         '422':
           description: Ошибка валидации
-
-  # ========================= Счета =================================
-  /accounts:
-    get:
-      tags: [Accounts]
-      summary: Список счетов текущего пользователя
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: is_archived
-          in: query
-          schema:
-            type: boolean
-          description: Фильтр архивных/активных счетов
-      responses:
-        '200':
-          description: Массив счетов
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AccountResponse'
-        '401':
-          description: Не авторизован
-
-    post:
-      tags: [Accounts]
-      summary: Создать новый счёт
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AccountCreate'
-      responses:
-        '201':
-          description: Счёт создан
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccountResponse'
-        '400':
-          description: Неверные данные
-
-  /accounts/{account_id}:
-    get:
-      tags: [Accounts]
-      summary: Получить счёт по ID
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/accountIdParam'
-      responses:
-        '200':
-          description: Данные счёта
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccountResponse'
-        '404':
-          description: Счёт не найден
-
-    put:
-      tags: [Accounts]
-      summary: Обновить счёт
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/accountIdParam'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AccountUpdate'
-      responses:
-        '200':
-          description: Счёт обновлён
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AccountResponse'
-
-    delete:
-      tags: [Accounts]
-      summary: Удалить счёт
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/accountIdParam'
-      responses:
-        '204':
-          description: Счёт удалён
-        '404':
-          description: Счёт не найден
-
-  # ========================= Категории ============================
-  /categories:
-    get:
-      tags: [Categories]
-      summary: Список категорий пользователя
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: type
-          in: query
-          schema:
-            type: string
-            enum: [income, expense]
-          description: Фильтр по типу
-      responses:
-        '200':
-          description: Массив категорий
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/CategoryResponse'
-        '401':
-          description: Не авторизован
-
-    post:
-      tags: [Categories]
-      summary: Создать пользовательскую категорию
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CategoryCreate'
-      responses:
-        '201':
-          description: Категория создана
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CategoryResponse'
-        '400':
-          description: Ошибка валидации
-
-  /categories/{category_id}:
-    put:
-      tags: [Categories]
-      summary: Обновить категорию
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/categoryIdParam'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CategoryUpdate'
-      responses:
-        '200':
-          description: Категория обновлена
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CategoryResponse'
-        '403':
-          description: Нельзя изменить системную категорию
-        '404':
-          description: Категория не найдена
-
-    delete:
-      tags: [Categories]
-      summary: Удалить категорию
-      security:
-        - bearerAuth: []
-      parameters:
-        - $ref: '#/components/parameters/categoryIdParam'
-      responses:
-        '204':
-          description: Категория удалена
-        '403':
-          description: Нельзя удалить системную категорию
-        '404':
-          description: Категория не найдена
-
-  # ========================= Транзакции ===========================
-  /transactions:
-    get:
-      tags: [Transactions]
-      summary: Список транзакций с фильтрацией
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: account_id
-          in: query
-          schema:
-            type: integer
-        - name: category_id
-          in: query
-          schema:
-            type: integer
-        - name: type
-          in: query
-          schema:
-            type: string
-            enum: [income, expense]
-        - name: date_from
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: date_to
-          in: query
-          schema:
-            type: string
-            format: date
-        - name: limit
-          in: query
-          schema:
-            type: integer
-            default: 50
-            minimum: 1
-            maximum: 100
-        - name: offset
-          in: query
-          schema:
-            type: integer
-            default: 0
-      responses:
-        '200':
-          description: Список транзакций
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TransactionResponse'
-        '401':
-          description: Не авторизован
-
-    post:
-      tags: [Transactions]
-      summary: Создать транзакцию (автоматически обновит баланс счёта)
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TransactionCreate'
-      responses:
-        '201':
-          description: Транзакция создана
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TransactionResponse'
-        '400':
-          description: Ошибка валидации или недостаточно средств
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /transactions/{transaction_id}:
-    put:
-      tags: [Transactions]
-      summary: Обновить транзакцию (корректирует баланс при изменении суммы)
+  # ========================= Расходы ===============================
+  /api/v1/expenses:
+    get:
+      tags: [Expenses]
+      summary: Список расходов текущего пользователя
       security:
         - bearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/transactionIdParam'
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [general, food, transport, housing, utilities, entertainment, health, education, shopping, other]
+          description: Фильтр по типу расхода
+      responses:
+        '200':
+          description: Массив расходов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExpenseResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      tags: [Expenses]
+      summary: Создать расход
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TransactionUpdate'
+              $ref: '#/components/schemas/ExpenseCreate'
       responses:
-        '200':
-          description: Транзакция обновлена
+        '201':
+          description: Расход создан
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TransactionResponse'
-        '404':
-          description: Транзакция не найдена
+                $ref: '#/components/schemas/ExpenseResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Ошибка валидации (например, недопустимый type)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-    delete:
-      tags: [Transactions]
-      summary: Удалить транзакцию (возвращает сумму на счёт)
+  /api/v1/expenses/{expense_id}:
+    get:
+      tags: [Expenses]
+      summary: Получить расход по ID
       security:
         - bearerAuth: []
       parameters:
-        - $ref: '#/components/parameters/transactionIdParam'
+        - $ref: '#/components/parameters/expenseIdParam'
+      responses:
+        '200':
+          description: Данные расхода
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Расход не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags: [Expenses]
+      summary: Обновить расход
+      description: Обновляются только переданные поля
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/expenseIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExpenseUpdate'
+      responses:
+        '200':
+          description: Расход обновлён
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExpenseResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Расход не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [Expenses]
+      summary: Удалить расход
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/expenseIdParam'
       responses:
         '204':
-          description: Транзакция удалена
+          description: Расход удалён
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Транзакция не найдена
+          description: Расход не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ========================= Служебные =============================
+  /:
+    get:
+      tags: [Health]
+      summary: Корень API
+      responses:
+        '200':
+          description: Приветственное сообщение
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Проверка здоровья сервиса и состояния БД
+      responses:
+        '200':
+          description: Сервис работает
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  database:
+                    type: string
+                    example: connected
