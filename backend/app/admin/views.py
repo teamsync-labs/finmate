@@ -45,6 +45,7 @@ class UserAdmin(ModelView, model=User):
 
     form_excluded_columns = [
         User.expenses,
+        User.username,
     ]
 
     can_create = True
