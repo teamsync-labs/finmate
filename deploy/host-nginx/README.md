@@ -58,6 +58,15 @@ certbot --nginx -d finmate.space -d www.finmate.space
 обратно в репо (`deploy/host-nginx/`) — источник правды с SSL-блоками.
 Проверь, что www→apex редирект на **https** (certbot иногда оставляет `http://`).
 
+На VPS после правки conf из репо:
+
+```bash
+cp /var/www/finmate/prod/deploy/host-nginx/finmate-prod.conf \
+  /etc/nginx/sites-available/finmate-prod.conf
+nginx -t && systemctl reload nginx
+```
+
+
 ### 3. Закрыть прямой доступ по порту compose
 
 GitHub Environment `prod`: `ACCESS_VIA_DOMAIN=true` → Redeploy (Deploy Prod).
