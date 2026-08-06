@@ -44,9 +44,9 @@
 
 ### VPS
 
-Нужны Docker, Compose plugin, **rsync**.
+На сервере: Docker, Compose plugin, **rsync**.
 
 Пока `ACCESS_VIA_DOMAIN=false`: healthcheck `http://$SERVER_HOST:3111/health`.  
 После host nginx + TLS: `ACCESS_VIA_DOMAIN=true` → `https://finmate.space/health`.
 
-Хостовый nginx: [`deploy/host-nginx/`](../deploy/host-nginx/) (vhost + maintenance). Копируется в `/etc/nginx` вручную — см. README там.
+Хостовый nginx: [`deploy/host-nginx/`](../deploy/host-nginx/) (vhost + maintenance). В `/etc/nginx` выкладывается вручную — см. README там.
