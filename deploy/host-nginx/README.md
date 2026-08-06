@@ -14,12 +14,22 @@
 
 ### 1. HTTP vhost
 
-Нужны: хостовый `nginx`, открытые `80`/`443` в UFW. Файлы на диске — после деплоя (rsync).
+Нужны: хостовый `nginx`, открытые `80`/`443` в UFW.
+
+Если rsync/deploy ещё не довёз каталог (например Actions лежит) — скопируй с машины с репо:
 
 ```bash
-# SERVER_PATH = GitHub Variable (каталог кода prod), обычно:
-#   /var/www/finmate/prod
+# с рабочей машины (путь к ключу/хосту — свои)
+scp -r deploy/host-nginx \
+  finmate-prod@SERVER:/var/www/finmate/prod/deploy/
+```
+
+На VPS (root):
+
+```bash
 install -d -m 755 /etc/nginx/sites-available /etc/nginx/sites-enabled
+install -d -m 755 /var/www/finmate/prod/deploy/host-nginx
+# если scp шёл в deploy/host-nginx — файлы уже на месте
 cp /var/www/finmate/prod/deploy/host-nginx/finmate-prod.conf \
   /etc/nginx/sites-available/finmate-prod.conf
 ln -sfn /etc/nginx/sites-available/finmate-prod.conf \
