@@ -44,8 +44,29 @@ infra/               деплой и окружения
 
 ## Локальный запуск
 
-Инфраструктура и сервисы добавляются по мере реализации.
+### Требования
+- Docker (>= 20.10)
+- Docker Compose (>= 2.0)
+
+### Запуск
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+В `.env` задано `COMPOSE_FILE=…:docker-compose.dev.yml` — снаружи один порт `NGINX_PORT` (по умолчанию `8088`).
+
+Проверка:
+- сайт: http://localhost:8088/
+- health: http://localhost:8088/health
+- docs: http://localhost:8088/docs
+- API: `/api/v1/...`, admin: `/admin`
+
+### Остановка
+```bash
+docker compose down
+```
 
 Статический сайт можно открыть напрямую: `frontend/index.html`.
 
-Инструкции по backend и боту появятся в README, когда появятся каркасы. Мобильное приложение — опционально.
+Telegram-бот в этот compose не входит.

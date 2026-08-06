@@ -1,0 +1,30 @@
+# VCS / CI / IDE
+.git
+.github
+.agents
+.cursor
+.idea
+.vscode
+
+# Local envs / secrets (на VPS пишет deploy-job)
+.env
+.env.*
+
+# Python local
+**/.venv
+**/venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+
+# Not needed on VPS for runtime
+backend/bot
+backend/tests
+mobile
+docs
+prompts
+infra
+*.md
+
+# OS
+.DS_Store
