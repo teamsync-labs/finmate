@@ -1,7 +1,7 @@
 # Хостовый nginx (вне compose)
 
-Каталог уезжает на VPS с rsync в `$SERVER_PATH/deploy/host-nginx/`.
-Конфиг в `/etc/nginx/...` **не** подхватывается сам — копируем вручную.
+Каталог попадает на VPS через rsync в `$SERVER_PATH/deploy/host-nginx/`.
+Конфиг в `/etc/nginx/...` сам не подхватывается — копирование в sites-available вручную.
 
 ## Файлы
 
@@ -14,11 +14,20 @@
 
 ### 1. HTTP vhost
 
-Нужны: хостовый `nginx`, открытые `80`/`443` в UFW. Файлы на диске — после деплоя (rsync).
+Требования: хостовый `nginx`, в UFW открыты `80`/`443`.
+
+Если rsync/deploy ещё не довёз каталог (например недоступен Actions) — каталог копируется с машины с репо:
 
 ```bash
-# SERVER_PATH = GitHub Variable (каталог кода prod), обычно:
-#   /var/www/finmate/prod
+# с рабочей машины (ключ и хост — по окружению)
+ssh finmate-prod@SERVER 'mkdir -p /var/www/finmate/prod/deploy'
+scp -r deploy/host-nginx \
+  finmate-prod@SERVER:/var/www/finmate/prod/deploy/
+```
+
+На VPS (root):
+
+```bash
 install -d -m 755 /etc/nginx/sites-available /etc/nginx/sites-enabled
 cp /var/www/finmate/prod/deploy/host-nginx/finmate-prod.conf \
   /etc/nginx/sites-available/finmate-prod.conf
@@ -30,12 +39,15 @@ nginx -t && systemctl reload nginx
 Проверка:
 
 ```bash
-curl -fsS -H 'Host: finmate.space' http://127.0.0.1/health
+# если nginx слушает только публичный IP (ISPmanager) — Host на IP, не на 127.0.0.1
+curl -fsS -H 'Host: finmate.space' http://127.0.0.1/health \
+  || curl -fsS -H 'Host: finmate.space' http://SERVER_IP/health
 # снаружи: http://finmate.space/health → {"status":"ok","database":"connected"}
+# /health отвечает на GET; curl -I (HEAD) может дать 405 — это ожидаемо
 ```
 
-Если ISPmanager держит `listen <IP>:80` на чужом vhost — в нашем conf тоже
-пропиши `listen <IP>:80` (не голый `listen 80`), иначе запросы уйдут в default_server.
+Если ISPmanager держит `listen <IP>:80` на чужом vhost — в conf этого проекта тоже
+нужен `listen <IP>:80` (не голый `listen 80`), иначе запросы уходят в default_server.
 
 ### 2. TLS (certbot)
 
@@ -44,14 +56,24 @@ apt-get install -y certbot python3-certbot-nginx
 certbot --nginx -d finmate.space -d www.finmate.space
 ```
 
-После успеха скопируй обновлённый `/etc/nginx/sites-available/finmate-prod.conf`
-обратно в репо (`deploy/host-nginx/`) — источник правды с SSL-блоками.
-Проверь, что www→apex редирект на **https** (certbot иногда оставляет `http://`).
+После выпуска сертификата обновлённый `/etc/nginx/sites-available/finmate-prod.conf`
+возвращается в репо (`deploy/host-nginx/`) как источник правды с SSL-блоками.
+У www→apex редирект должен быть на **https** (certbot иногда оставляет `http://`).
+Не добавлять `ipv6only=on` только на один из `listen [::]:443` — будет conflict.
+
+После правки conf в репо — выкладка на VPS:
+
+```bash
+cp /var/www/finmate/prod/deploy/host-nginx/finmate-prod.conf \
+  /etc/nginx/sites-available/finmate-prod.conf
+# и копия в $SERVER_PATH/deploy/host-nginx/ при необходимости
+nginx -t && systemctl reload nginx
+```
 
 ### 3. Закрыть прямой доступ по порту compose
 
-GitHub Environment `prod`: `ACCESS_VIA_DOMAIN=true` → Redeploy (Deploy Prod).
-Compose-nginx станет на `127.0.0.1:3111`. Healthcheck — `https://finmate.space/health`.
+В GitHub Environment `prod` выставить `ACCESS_VIA_DOMAIN=true` и выполнить Redeploy (Deploy Prod).
+Compose-nginx слушает `127.0.0.1:3111`. Healthcheck — `https://finmate.space/health`.
 
 Затем под root:
 
@@ -62,4 +84,4 @@ ufw status numbered
 ss -tlnp | grep 3111
 ```
 
-Ожидаем: `:3111` только `127.0.0.1`.
+Ожидаемый результат: `:3111` только на `127.0.0.1`.
