@@ -48,19 +48,5 @@ services:
       timeout: 5s
       retries: 5
 
-  bot:
-    build:
-      context: ./backend
-      dockerfile: bot/Dockerfile
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    network_mode: host 
-    environment:
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - OLLAMA_API_URL=${OLLAMA_API_URL}
-      - PROXY=${PROXY:-false}
-      - TELEGRAM_PROXY=${TELEGRAM_PROXY}
-    restart: unless-stopped
-
 volumes:
   pgdata:
