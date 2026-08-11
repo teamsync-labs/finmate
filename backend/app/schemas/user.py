@@ -7,17 +7,22 @@ from pydantic import BaseModel
 
 
 class TelegramAuth(BaseModel):
-    """Схема для входа/регистрации через Telegram."""
+    """Данные для входа/регистрации через Telegram."""
+
     telegram_id: int
     username: Optional[str] = None
 
 
 class UserSettings(BaseModel):
+    """Настройки пользователя: валюта и язык."""
+
     currency: Optional[str] = "RUB"
     language: Optional[str] = "ru"
 
 
 class UserResponse(BaseModel):
+    """Ответ с данными пользователя."""
+
     id: int
     telegram_id: int
     username: Optional[str] = None
@@ -29,6 +34,7 @@ class UserResponse(BaseModel):
 
 class AuthResponse(BaseModel):
     """Ответ аутентификации: токен + полные данные."""
+
     access_token: str
     token_type: str = "bearer"
     telegram_id: int

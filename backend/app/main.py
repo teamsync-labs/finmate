@@ -1,15 +1,15 @@
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import logging
 from sqlalchemy import text
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import settings
 from app.core.database import engine, Base
-from app.api.v1 import auth, accounts
+from app.api.v1 import auth, accounts, report
 from app.admin import register_admin
 
 
@@ -44,6 +44,7 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(accounts.router, prefix=settings.API_V1_PREFIX)
+app.include_router(report.router, prefix=settings.API_V1_PREFIX)
 
 
 # Register admin panel
@@ -72,6 +73,7 @@ def root():
 @app.get("/health")
 def health():
     """Проверка здоровья сервиса и состояния БД."""
+
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))

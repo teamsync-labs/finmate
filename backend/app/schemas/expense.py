@@ -13,6 +13,8 @@ VALID_EXPENSE_TYPES = {
 
 
 class ExpenseCreate(BaseModel):
+    """Данные для создания расхода."""
+
     expense_name: str
     amount: float = 0.0
     type: str = "general"
@@ -54,6 +56,8 @@ class ExpenseCreate(BaseModel):
 
 
 class ExpenseUpdate(BaseModel):
+    """Данные для частичного обновления расхода."""
+
     expense_name: Optional[str] = None
     amount: Optional[float] = None
     type: Optional[str] = None
@@ -98,6 +102,8 @@ class ExpenseUpdate(BaseModel):
 
 
 class ExpenseResponse(BaseModel):
+    """Ответ с данными расхода."""
+
     id: int
     user_id: int
     expense_name: str

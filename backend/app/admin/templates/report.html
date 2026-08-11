@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Отчёт по расходам — FinSight Admin</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #f3f4f6;
+    color: #111827;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 48px 16px;
+  }
+  .card {
+    width: 100%;
+    max-width: 920px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    padding: 32px;
+  }
+  h1 { margin: 0 0 8px; font-size: 20px; line-height: 1.3; }
+  .sub { margin: 0 0 24px; color: #6b7280; font-size: 14px; }
+  .error {
+    margin-bottom: 20px;
+    padding: 10px 12px;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 14px;
+  }
+  .field { margin-bottom: 16px; }
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  input[type="date"] {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font: inherit;
+    background: #ffffff;
+    color: inherit;
+  }
+  input[type="date"]:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+  button {
+    width: 100%;
+    margin-top: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: #ffffff;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:hover { background: #1d4ed8; }
+  .back {
+    display: block;
+    margin-top: 20px;
+    text-align: center;
+    color: #2563eb;
+    font-size: 14px;
+    text-decoration: none;
+  }
+  .back:hover { text-decoration: underline; }
+
+  .results { margin-top: 28px; border-top: 1px solid #e5e7eb; padding-top: 24px; }
+  .summary { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .stat {
+    flex: 1 1 140px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .stat-value { display: block; font-size: 22px; font-weight: 700; }
+  .stat-label { display: block; margin-top: 4px; font-size: 13px; color: #6b7280; }
+  .category { margin-bottom: 20px; }
+  .category-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .category-head h2 { margin: 0; font-size: 16px; }
+  .category-meta { font-size: 13px; color: #6b7280; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+  th { background: #f9fafb; font-weight: 600; }
+  .num { text-align: right; white-space: nowrap; }
+  td.num { font-variant-numeric: tabular-nums; }
+  .empty { margin-top: 24px; color: #6b7280; font-size: 14px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Отчёт по расходам</h1>
+    <p class="sub">Укажите период и нажмите «Показать».</p>
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+    <form method="get" action="{{ form_action }}">
+      <div class="field">
+        <label for="date_from">С даты</label>
+        <input type="date" id="date_from" name="date_from" value="{{ date_from }}" required>
+      </div>
+      <div class="field">
+        <label for="date_to">По дату</label>
+        <input type="date" id="date_to" name="date_to" value="{{ date_to }}" required>
+      </div>
+      <button type="submit">Показать</button>
+    </form>
+    {% if report %}
+    <div class="results">
+      <div class="summary">
+        <div class="stat">
+          <span class="stat-value">{{ report.total_amount }}</span>
+          <span class="stat-label">Общая сумма</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{ report.total_count }}</span>
+          <span class="stat-label">Расходов</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value">{{ report.categories | length }}</span>
+          <span class="stat-label">Категорий</span>
+        </div>
+      </div>
+      {% if not report.categories %}
+      <p class="empty">За выбранный период расходов не найдено.</p>
+      {% else %}
+      {% for cat in report.categories %}
+      <section class="category">
+        <div class="category-head">
+          <h2>{{ cat.category }}</h2>
+          <span class="category-meta">{{ cat.count }} шт. · {{ cat.total }}</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Дата</th><th>Название</th>
+            <th class="num">Сумма</th><th>Валюта</th>
+          </tr></thead>
+          <tbody>
+            {% for e in cat.expenses %}
+            <tr>
+              <td>{{ e.created_at or "" }}</td>
+              <td>{{ e.expense_name or "" }}</td>
+              <td class="num">{{ e.amount }}</td>
+              <td>{{ e.currency or "" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+      {% endfor %}
+      {% endif %}
+    </div>
+    {% endif %}
+    <a class="back" href="{{ admin_url }}">← Вернуться в админ-панель</a>
+  </div>
+</body>
+</html>

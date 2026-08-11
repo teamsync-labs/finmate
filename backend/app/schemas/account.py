@@ -1,3 +1,5 @@
+"""Схемы для счетов пользователя."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -13,6 +15,8 @@ VALID_ACCOUNT_TYPES = {
 
 
 class AccountCreate(BaseModel):
+    """Данные для создания счёта."""
+
     name: str
     type: str
     balance: float = 0.0
@@ -45,6 +49,8 @@ class AccountCreate(BaseModel):
 
 
 class AccountUpdate(BaseModel):
+    """Данные для частичного обновления счёта."""
+
     name: Optional[str] = None
     type: Optional[str] = None
     balance: Optional[float] = None
@@ -70,6 +76,8 @@ class AccountUpdate(BaseModel):
 
 
 class AccountResponse(BaseModel):
+    """Ответ с данными счёта."""
+
     id: int
     user_id: int
     name: str

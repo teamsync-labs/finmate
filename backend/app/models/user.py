@@ -7,6 +7,8 @@ from app.core.database import Base
 
 
 class User(Base):
+    """Модель пользователей."""
+
     __tablename__ = "users"
 
     id = Column(

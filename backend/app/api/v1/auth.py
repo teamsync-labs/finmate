@@ -26,6 +26,7 @@ def auth_telegram(
     Аутентификация через Telegram.
     Если пользователь с таким telegram_id не найден — создаётся новый.
     """
+
     user = db.query(User).filter(
         User.telegram_id == payload.telegram_id
     ).first()

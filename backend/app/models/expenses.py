@@ -11,6 +11,8 @@ from app.core.database import Base
 
 
 class Expenses(Base):
+    """Модель расходов."""
+
     __tablename__ = "expenses"
 
     id = Column(Integer, primary_key=True, index=True)

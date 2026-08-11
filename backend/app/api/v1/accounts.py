@@ -24,6 +24,7 @@ def list_expenses(
     db: Session = Depends(get_db),
 ):
     """Get all expenses for the current user."""
+
     query = db.query(Expenses).filter(
         Expenses.user_id == current_user.id,
     )
