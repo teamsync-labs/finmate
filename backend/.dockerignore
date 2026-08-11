@@ -1,40 +1,13 @@
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-.eggs/
-dist/
-build/
-*.egg
-*.whl
-
-# Environment
+.git
+.venv
+venv
+__pycache__
+**/__pycache__
+*.pyc
+.pytest_cache
 .env
-.env.local
-.env.*.local
-.venv/
-venv/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Git
-.git/
+*.md
+bot
+tests
 .gitignore
-
-# Docker
-Dockerfile
-.dockerignore
-
-# Project specific
-*.db
-*.sqlite3
-alembic/versions/*.pyc
-tests/
+.DS_Store
