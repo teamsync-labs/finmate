@@ -1,19 +1,145 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinMate</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="FinMate — персональный ИИ-помощник по учёту расходов. Голос или фото чека — трата сохраняется автоматически." />
+  <title>FinMate</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Outfit:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
-    <h1>FinMate</h1>
-    <p>Сайт в разработке.</p>
-    <nav>
-        <ul>
-            <li><a href="team.html">Команда</a></li>
-            <li><a href="#">Мобильное приложение</a></li>
-            <li><a href="#">Telegram-бот</a></li>
-        </ul>
+  <div class="site-chrome">
+    <nav class="site-nav" aria-label="Навигация">
+      <div class="site-nav-inner">
+        <a class="brand-mark" href="index.html">
+          <img src="assets/logo.svg" width="28" height="28" alt="" />
+          FinMate
+        </a>
+        <a class="nav-link" href="index.html" aria-current="page">О проекте</a>
+        <a class="nav-link" href="team.html">Команда</a>
+        <a class="nav-link" href="#stack">Стек</a>
+        <a class="nav-link" href="#mvp">MVP</a>
+      </div>
     </nav>
+  </div>
+
+  <main class="page">
+    <header class="hero">
+      <div class="brand">FinMate<br /><em>Учет расходов без ручного ввода</em></div>
+      <p class="lede">
+        Проект командной практики
+        <a href="https://geek-tik.tech/teams/finmate">geek-tik.tech</a>:
+      </p>
+      <div class="meta">
+        <span class="chip">Telegram</span>
+        <span class="chip">FastAPI</span>
+        <span class="chip">Yandex Cloud AI</span>
+      </div>
+    </header>
+
+    <section id="stack" class="product-section" aria-labelledby="stack-heading">
+      <h2 class="section-title" id="stack-heading">
+        Технологический стек
+      </h2>
+      <dl class="stack-list">
+        <div>
+          <dt>Клиенты</dt>
+          <dd class="meta">
+            <span class="chip">Telegram Bot API</span>
+          </dd>
+        </div>
+        <div>
+          <dt>Backend</dt>
+          <dd class="meta">
+            <span class="chip">Python</span>
+            <span class="chip">FastAPI</span>
+            <span class="chip">PostgreSQL</span>
+          </dd>
+        </div>
+        <div>
+          <dt>ИИ</dt>
+          <dd class="meta">
+            <span class="chip">Yandex Cloud</span>
+            <span class="chip">SpeechKit</span>
+            <span class="chip">Vision OCR</span>
+            <span class="chip">YandexGPT</span>
+          </dd>
+        </div>
+        <div>
+          <dt>Инфра</dt>
+          <dd class="meta">
+            <span class="chip">Docker</span>
+            <span class="chip">GitHub Actions</span>
+            <span class="chip">nginx</span>
+          </dd>
+        </div>
+      </dl>
+      <p class="section-note section-note-follow">
+        Код: <a href="https://github.com/teamsync-labs/finmate">finmate</a>
+        · команда на
+        <a href="https://geek-tik.tech/teams/finmate">geek-tik.tech</a>.
+      </p>
+    </section>
+
+    <section id="mvp" class="product-section" aria-labelledby="mvp-heading">
+      <h2 class="section-title" id="mvp-heading">
+        <span class="section-kind">MVP</span>
+        Как это работает
+      </h2>
+      <p class="section-note">
+        Одна задача — перестать записывать расходы вручную. Отправляете голосовое или чек  — бот выделит сумму, категорию и добавит запись о новой покупке.
+      </p>
+
+      <div class="flow-row" aria-label="Сценарий MVP">
+        <article class="flow-card">
+          <span class="flow-icon" aria-hidden="true">🎙️</span>
+          <span class="flow-step" aria-hidden="true">1</span>
+          <h3>Голос или фото чека</h3>
+          <p>«Потратил 450 на обед» или снимок чека из магазина.</p>
+        </article>
+
+        <article class="flow-card">
+          <span class="flow-icon" aria-hidden="true">✨</span>
+          <span class="flow-step" aria-hidden="true">2</span>
+          <h3>ИИ извлекает данные</h3>
+          <p>Распознаёт сумму, категорию и детали траты. При необходимости — уточнение.</p>
+        </article>
+
+        <article class="flow-card">
+          <span class="flow-icon" aria-hidden="true">📋</span>
+          <span class="flow-step" aria-hidden="true">3</span>
+          <h3>Расход сохранён</h3>
+          <p>Подтверждение в чате и простой список записанных трат в аккаунте.</p>
+        </article>
+      </div>
+
+      <p class="section-note section-note-follow">
+        Подробнее о целях и границах MVP — в
+        <a href="https://github.com/teamsync-labs/finmate/blob/main/docs/vision.md">vision.md</a>
+        репозитория.
+      </p>
+    </section>
+
+    <footer class="footer footer-legal">
+      <p>Проект команды FinMate · <a href="https://geek-tik.tech/teams/finmate">geek-tik.tech</a></p>
+      <p>ИП Сардов Н.С. · ИНН 632304051711 · <a href="mailto:hello@geek-tik.tech">hello@geek-tik.tech</a></p>
+      <nav aria-label="Правовая информация">
+        <a href="https://consent.geek-tik.tech/t/finmate/policy" target="_blank" rel="noopener">Политика
+          конфиденциальности</a>
+        <a href="https://consent.geek-tik.tech/t/finmate/pdn-consent" target="_blank" rel="noopener">Согласие на
+          обработку ПДн</a>
+      </nav>
+    </footer>
+  </main>
+  <script src="cookie-notice.js" data-policy-href="https://consent.geek-tik.tech/t/finmate/policy"></script>
 </body>
+
 </html>
