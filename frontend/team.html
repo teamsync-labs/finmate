@@ -1,13 +1,87 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Команда — FinMate</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Команда — FinMate</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Outfit:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
-    <h1>Команда FinMate</h1>
-    <p>Страница команды в разработке.</p>
-    <p><a href="index.html">На главную</a></p>
+  <div class="site-chrome">
+    <nav class="site-nav" aria-label="Навигация">
+      <div class="site-nav-inner">
+        <a class="brand-mark" href="index.html">
+          <img src="assets/logo.svg" width="28" height="28" alt="" />
+          FinMate
+        </a>
+        <a class="nav-link" href="index.html">О проекте</a>
+        <a class="nav-link" href="team.html" aria-current="page">Команда</a>
+        <a class="nav-link" href="index.html#stack">Стек</a>
+        <a class="nav-link" href="index.html#mvp">MVP</a>
+      </div>
+    </nav>
+  </div>
+
+  <main class="page">
+    <header class="hero">
+      <div class="brand">Команда<br /><em>FinMate</em></div>
+    </header>
+
+    <ul class="team-list">
+      <li class="member">
+        <img src="avatars/placeholder.svg" width="56" height="56" alt="" />
+        <div>
+          <div class="role">Project Manager</div>
+          <div class="desc">Синхронизация команды, контроль сроков и скоупа MVP</div>
+          <div class="name">Имя: —</div>
+        </div>
+      </li>
+      <li class="member">
+        <img src="avatars/placeholder.svg" width="56" height="56" alt="" />
+        <div>
+          <div class="role">Backend, Telegram-бот (Python)</div>
+          <div class="desc">бизнес-логика, интеграция с бэкендом</div>
+          <div class="name">Имя: —</div>
+        </div>
+      </li>
+      <li class="member">
+        <img src="avatars/placeholder.svg" width="56" height="56" alt="" />
+        <div>
+          <div class="role">Backend (Python)</div>
+          <div class="desc">Разработка API, интеграции с ИИ</div>
+          <div class="name">Имя: —</div>
+        </div>
+      </li>
+      <li class="member">
+        <img src="avatars/placeholder.svg" width="56" height="56" alt="" />
+        <div>
+          <div class="role">QA</div>
+          <div class="desc">Сценарии, регресс, проверка качества</div>
+          <div class="name">Имя: —</div>
+        </div>
+      </li>
+    </ul>
+
+    <footer class="footer footer-legal">
+      <p><a href="index.html">← На главную</a></p>
+      <p>ИП Сардов Н.С. · ИНН 632304051711 · <a href="mailto:hello@geek-tik.tech">hello@geek-tik.tech</a></p>
+      <nav aria-label="Правовая информация">
+        <a href="https://consent.geek-tik.tech/t/finmate/policy" target="_blank" rel="noopener">Политика
+          конфиденциальности</a>
+        <a href="https://consent.geek-tik.tech/t/finmate/pdn-consent" target="_blank" rel="noopener">Согласие на
+          обработку ПДн</a>
+      </nav>
+    </footer>
+  </main>
+  <script src="cookie-notice.js" data-policy-href="https://consent.geek-tik.tech/t/finmate/policy"></script>
 </body>
+
 </html>
