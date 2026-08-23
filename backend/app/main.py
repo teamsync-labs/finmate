@@ -1,9 +1,12 @@
 from contextlib import asynccontextmanager
-
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from typing import Annotated
 import logging
+
+from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
+from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlalchemy import text
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -11,6 +14,22 @@ from app.core.config import settings
 from app.core.database import engine, Base
 from app.api.v1 import auth, accounts
 from app.admin import register_admin
+
+
+_DOCS_USER = "dev"
+_DOCS_PASSWORD = "dev"
+_docs_basic = HTTPBasic(auto_error=True)
+
+
+def _require_docs_basic(
+    credentials: Annotated[HTTPBasicCredentials, Depends(_docs_basic)],
+) -> None:
+    if credentials.username != _DOCS_USER or credentials.password != _DOCS_PASSWORD:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="unauthorized",
+            headers={"WWW-Authenticate": 'Basic realm="API docs"'},
+        )
 
 
 @asynccontextmanager
@@ -29,6 +48,9 @@ app = FastAPI(
     contact={"name": "Команда FinSight", "email": "dev@finsight.example.com"},
     swagger_ui_parameters={"persistAuthorization": True},
     lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None,
 )
 
 app.add_middleware(
@@ -50,7 +72,25 @@ app.include_router(accounts.router, prefix=settings.API_V1_PREFIX)
 register_admin(app)
 
 
-original_openapi = app.openapi
+@app.get("/docs", include_in_schema=False)
+async def swagger_ui(_: Annotated[None, Depends(_require_docs_basic)]):
+    return get_swagger_ui_html(
+        openapi_url="/openapi.json",
+        title=f"{settings.APP_NAME} - Swagger UI",
+    )
+
+
+@app.get("/redoc", include_in_schema=False)
+async def redoc_ui(_: Annotated[None, Depends(_require_docs_basic)]):
+    return get_redoc_html(
+        openapi_url="/openapi.json",
+        title=f"{settings.APP_NAME} - ReDoc",
+    )
+
+
+@app.get("/openapi.json", include_in_schema=False)
+async def openapi_schema(_: Annotated[None, Depends(_require_docs_basic)]):
+    return JSONResponse(app.openapi())
 
 
 @app.exception_handler(Exception)

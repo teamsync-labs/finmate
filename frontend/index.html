@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="FinMate — персональный ИИ-помощник по учёту расходов. Голос или фото чека — трата сохраняется автоматически." />
+  <meta name="description" content="FinMate — персональный ИИ-помощник по учёту расходов. Голосовое, фото чека или текст с тратой — расход сохраняется автоматически." />
   <title>FinMate</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -27,6 +27,8 @@
         <a class="nav-link" href="team.html">Команда</a>
         <a class="nav-link" href="#stack">Стек</a>
         <a class="nav-link" href="#mvp">MVP</a>
+        <a class="nav-link" href="#bot">Telegram-бот</a>
+        <a class="nav-link" href="mockup.html">Макет</a>
       </div>
     </nav>
   </div>
@@ -95,22 +97,23 @@
         Как это работает
       </h2>
       <p class="section-note">
-        Одна задача — перестать записывать расходы вручную. Отправляете голосовое или чек  — бот выделит сумму, категорию и добавит запись о новой покупке.
+        Одна задача — перестать записывать расходы вручную. Голосовое или фото чека — основной путь;
+        текст тоже принимаем, если в нём есть данные о трате.
       </p>
 
       <div class="flow-row" aria-label="Сценарий MVP">
         <article class="flow-card">
           <span class="flow-icon" aria-hidden="true">🎙️</span>
           <span class="flow-step" aria-hidden="true">1</span>
-          <h3>Голос или фото чека</h3>
-          <p>«Потратил 450 на обед» или снимок чека из магазина.</p>
+          <h3>Голосовое, чек или текст</h3>
+          <p>Голосовое, снимок чека или сообщение вроде «потратил 450 на обед».</p>
         </article>
 
         <article class="flow-card">
           <span class="flow-icon" aria-hidden="true">✨</span>
           <span class="flow-step" aria-hidden="true">2</span>
           <h3>ИИ извлекает данные</h3>
-          <p>Распознаёт сумму, категорию и детали траты. При необходимости — уточнение.</p>
+          <p>Распознаёт сумму, категорию и детали траты.</p>
         </article>
 
         <article class="flow-card">
@@ -123,8 +126,141 @@
 
       <p class="section-note section-note-follow">
         Подробнее о целях и границах MVP — в
-        <a href="https://github.com/teamsync-labs/finmate/blob/main/docs/vision.md">vision.md</a>
-        репозитория.
+        <a href="https://github.com/teamsync-labs/finmate/blob/main/docs/vision.md">концепции продукта</a>
+      </p>
+    </section>
+
+    <section id="bot" class="product-section" aria-labelledby="bot-heading">
+      <h2 class="section-title" id="bot-heading">
+        <span class="section-kind">Клиент · Telegram</span>
+        Telegram-бот
+      </h2>
+      <p class="section-note">
+        Распознаем голосовое или фото чека. Текстовые сообщения тоже обрабатываем —
+        если в них есть информация о покупке, бот сохранит расход.
+      </p>
+      <div class="meta">
+        <span class="chip">Telegram Bot API</span>
+        <span class="chip">Голосовое</span>
+        <span class="chip">Фото чека</span>
+        <span class="chip">Текст</span>
+      </div>
+
+      <div class="screen-row" aria-label="Экраны Telegram-бота">
+        <figure class="phone-shot">
+          <div class="phone phone-tg" aria-hidden="true">
+            <div class="tg-inner">
+              <div class="tg-topbar"><span>12:36</span><span>LTE</span></div>
+              <div class="tg-header">
+                <img src="assets/logo.svg" alt="" width="36" height="36" />
+                <div>
+                  <div class="name">FinMate</div>
+                  <div class="status">бот</div>
+                </div>
+              </div>
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row bot">
+                  <div class="tg-bubble bot">
+                    Пришлите голосовое о трате, фото чека или текст с суммой.
+                  </div>
+                </div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user tg-voice">
+                    <span class="tg-voice-play"></span>
+                    <span class="tg-voice-wave"></span>
+                    <span class="tg-voice-dur">0:04</span>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <div class="tg-bubble bot">
+                    «Потратил четыреста пятьдесят на обед»<br />
+                    Распознано: <strong>450 ₽</strong> · Обед
+                    <div class="tg-inline">
+                      <span>Подтвердить</span>
+                      <span>Отправить заново</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <figcaption>Голосовое сообщение</figcaption>
+        </figure>
+
+        <figure class="phone-shot">
+          <div class="phone phone-tg" aria-hidden="true">
+            <div class="tg-inner">
+              <div class="tg-topbar"><span>12:41</span><span>LTE</span></div>
+              <div class="tg-header">
+                <img src="assets/logo.svg" alt="" width="36" height="36" />
+                <div>
+                  <div class="name">FinMate</div>
+                  <div class="status">бот</div>
+                </div>
+              </div>
+              <div class="tg-chat">
+                <div class="tg-row user">
+                  <div class="tg-bubble user tg-photo">
+                    <img src="assets/receipt.png" alt="Фото кассового чека" width="200" height="166" />
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <div class="tg-bubble bot">
+                    Распознано: <strong>49,90 ₽</strong> · Продукты
+                    <div class="tg-inline">
+                      <span>Подтвердить</span>
+                      <span>Отправить заново</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <figcaption>Фото чека</figcaption>
+        </figure>
+
+        <figure class="phone-shot">
+          <div class="phone phone-tg" aria-hidden="true">
+            <div class="tg-inner">
+              <div class="tg-topbar"><span>12:48</span><span>LTE</span></div>
+              <div class="tg-header">
+                <img src="assets/logo.svg" alt="" width="36" height="36" />
+                <div>
+                  <div class="name">FinMate</div>
+                  <div class="status">бот</div>
+                </div>
+              </div>
+              <div class="tg-chat tg-chat--wide-bubbles">
+                <div class="tg-row user">
+                  <div class="tg-bubble user">Такси 320 ₽</div>
+                </div>
+                <div class="tg-row bot">
+                  <div class="tg-bubble bot">
+                    Сохранено: <strong>320 ₽</strong> · Транспорт
+                  </div>
+                </div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">/today</div>
+                </div>
+                <div class="tg-row bot">
+                  <div class="tg-bubble bot">
+                    Сегодня:<br />
+                    · Обед — 450 ₽<br />
+                    · Продукты — 49,90 ₽<br />
+                    · Транспорт — 320 ₽<br />
+                    <strong>Итого: 819,90 ₽</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <figcaption>Текст и список трат</figcaption>
+        </figure>
+      </div>
+
+      <p class="section-note section-note-follow">
+        Все экраны — в <a href="mockup.html">интерактивном макете</a>.
       </p>
     </section>
 
