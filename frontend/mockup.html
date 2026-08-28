@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinMate — макет Telegram-бота</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Outfit:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root {
+      --phone-w: 320px;
+      --phone-h: 640px;
+      --danger: #f87171;
+    }
+
+    .mockup-page {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+    }
+
+    .mockup-page .hero {
+      max-width: 40rem;
+      margin-bottom: 36px;
+    }
+
+    .section-intro {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      align-items: start;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 900px) {
+      .section-intro {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section-intro .lede {
+      margin-top: 0;
+    }
+
+    .legend {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: 20px 22px;
+    }
+
+    .legend h2 {
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      margin-bottom: 10px;
+      color: var(--ink);
+    }
+
+    .legend ol {
+      padding-left: 1.2rem;
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+    }
+
+    .legend li {
+      margin: 6px 0;
+    }
+
+    .mock-flow-map {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .mock-flow-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      width: 100%;
+    }
+
+    .mock-flow-card:hover,
+    .mock-flow-card.active {
+      border-color: rgba(94, 234, 212, 0.45);
+      background: var(--brand-dim);
+    }
+
+    .mock-flow-card strong {
+      display: block;
+      font-size: 0.88rem;
+      margin-bottom: 4px;
+      color: var(--ink);
+    }
+
+    .mock-flow-card span {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .prototype {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 36px;
+      align-items: start;
+    }
+
+    @media (max-width: 860px) {
+      .prototype {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+    }
+
+    .tg-phone {
+      width: var(--phone-w);
+      height: var(--phone-h);
+      background: #0e1621;
+      border-radius: 36px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 112px;
+      flex-shrink: 0;
+    }
+
+    .mockup-page .tg-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 26px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background:
+        radial-gradient(ellipse 70% 40% at 50% 0%, rgba(94, 234, 212, 0.12), transparent 60%),
+        #152029;
+    }
+
+    .mockup-page .tg-topbar {
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #8b9aab;
+      background: #1a2430;
+      flex-shrink: 0;
+    }
+
+    .mockup-page .tg-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #1a2430;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      flex-shrink: 0;
+    }
+
+    .mockup-page .tg-header img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--surface);
+    }
+
+    .mockup-page .tg-header .name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #f2f5f7;
+      line-height: 1.1;
+    }
+
+    .mockup-page .tg-header .status {
+      font-size: 0.68rem;
+      color: #7d8b9a;
+      margin-top: 2px;
+    }
+
+    .tg-screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .tg-screen.active {
+      display: flex;
+    }
+
+    .mockup-page .tg-chat {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mockup-page .tg-day {
+      align-self: center;
+      font-size: 0.65rem;
+      color: #9aa8b6;
+      background: rgba(15, 25, 36, 0.55);
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+
+    .mockup-page .tg-row {
+      display: flex;
+      max-width: 100%;
+      gap: 6px;
+      align-items: flex-end;
+    }
+
+    .mockup-page .tg-row.user {
+      align-self: flex-end;
+      width: 100%;
+      justify-content: flex-end;
+    }
+
+    .mockup-page .tg-row.bot {
+      align-self: flex-start;
+    }
+
+    .tg-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--surface);
+    }
+
+    .mockup-page .tg-bubble {
+      max-width: 88%;
+      padding: 10px 12px;
+      font-size: 0.74rem;
+      line-height: 1.4;
+    }
+
+    .mockup-page .tg-bubble.user {
+      background: #1f6f63;
+      color: #f0fffb;
+      border-radius: 14px 14px 4px 14px;
+    }
+
+    .mockup-page .tg-bubble.user:not(.media):not(.tg-voice) {
+      min-width: 50%;
+      box-sizing: border-box;
+    }
+
+    .mockup-page .tg-bubble.bot {
+      background: #243447;
+      color: #e8eef5;
+      border-radius: 14px 14px 14px 4px;
+    }
+
+    .mockup-page .tg-bubble.bot strong {
+      color: #f7faf6;
+    }
+
+    .mockup-page .tg-bubble.user.media {
+      padding: 4px;
+      background: #243447;
+      overflow: hidden;
+    }
+
+    .tg-photo {
+      width: 180px;
+      max-width: 100%;
+      aspect-ratio: 6 / 5;
+      border-radius: 10px;
+      background:
+        #e8ecf0 url("assets/receipt.png") center / cover no-repeat;
+    }
+
+    .mockup-page .tg-bubble.user.tg-voice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 160px;
+    }
+
+    .tg-meta {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 6px;
+      font-size: 0.62rem;
+      opacity: 0.7;
+    }
+
+    .mockup-page .tg-bubble.user .tg-meta {
+      color: rgba(240, 255, 251, 0.85);
+    }
+
+    .tg-checks {
+      letter-spacing: -0.05em;
+    }
+
+    .mockup-page .tg-inline {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 4px;
+      width: calc(100% - 34px);
+      max-width: 232px;
+      box-sizing: border-box;
+      align-self: flex-start;
+      margin-left: 34px;
+      padding: 0;
+      grid-template-columns: none;
+    }
+
+    .mockup-page .tg-inline.row {
+      flex-direction: row;
+      gap: 4px;
+      margin-left: 34px;
+      grid-template-columns: none;
+    }
+
+    .mockup-page .tg-inline.row button {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .mockup-page .tg-inline button {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      background: rgba(94, 234, 212, 0.16);
+      color: #d7f5ef;
+      font: inherit;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 8px 10px;
+      cursor: pointer;
+      text-align: center;
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .mockup-page .tg-inline button:hover {
+      background: rgba(94, 234, 212, 0.28);
+    }
+
+    .tg-cmd {
+      appearance: none;
+      border: 0;
+      background: none;
+      color: var(--brand);
+      font: inherit;
+      font-size: inherit;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+    }
+
+    .tg-composer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+      background: #1a2430;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      flex-shrink: 0;
+    }
+
+    .tg-composer button.attach,
+    .tg-composer button.send {
+      appearance: none;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 0;
+      background: rgba(94, 234, 212, 0.18);
+      color: #d7f5ef;
+      font: inherit;
+      font-size: 1.1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .tg-composer button.send {
+      background: #1f6f63;
+    }
+
+    .tg-composer .input {
+      flex: 1;
+      appearance: none;
+      border: 0;
+      border-radius: 18px;
+      background: #243447;
+      color: #9aa8b6;
+      font: inherit;
+      font-size: 0.78rem;
+      padding: 9px 14px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .tg-attach-menu {
+      display: none;
+      position: absolute;
+      left: 10px;
+      bottom: 58px;
+      z-index: 5;
+      background: #1f2c3a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 6px;
+      min-width: 160px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+    }
+
+    .tg-attach-menu.open {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .tg-attach-menu button {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: #e8eef5;
+      font: inherit;
+      font-size: 0.82rem;
+      text-align: left;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .tg-attach-menu button:hover {
+      background: rgba(94, 234, 212, 0.12);
+    }
+
+    .tg-inner.is-tg-doc .tg-header,
+    .tg-inner.is-tg-doc .tg-attach-menu {
+      display: none;
+    }
+
+    .tg-doc {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      background: #152029;
+    }
+
+    .tg-doc-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      background: #1a2430;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      flex-shrink: 0;
+    }
+
+    .tg-doc-bar button {
+      appearance: none;
+      border: 0;
+      background: none;
+      color: var(--brand);
+      font: inherit;
+      font-size: 0.82rem;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+
+    .tg-doc-bar .tg-doc-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #9aa8b6;
+    }
+
+    .tg-doc-body {
+      flex: 1;
+      padding: 20px 16px;
+      color: #e8eef5;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    .nav-dots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 16px;
+      justify-content: center;
+      max-width: var(--phone-w);
+    }
+
+    .nav-dots button {
+      appearance: none;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 0;
+      background: rgba(154, 167, 178, 0.35);
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .nav-dots button.active {
+      background: var(--brand);
+    }
+
+    .screen-label {
+      margin-top: 12px;
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--muted);
+      max-width: var(--phone-w);
+    }
+
+    .screen-label strong {
+      color: var(--ink-soft);
+      font-weight: 600;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      padding: 20px 22px;
+      min-width: 0;
+    }
+
+    .panel h3 {
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 1.35rem;
+      font-weight: 400;
+      margin-bottom: 10px;
+      color: var(--ink);
+    }
+
+    .panel p {
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+    }
+
+    .panel ul {
+      padding-left: 1.15rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .panel li {
+      margin: 5px 0;
+    }
+
+    .specs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+
+    .mockup-page .section-title {
+      scroll-margin-top: 112px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="site-chrome">
+    <nav class="site-nav" aria-label="Навигация">
+      <div class="site-nav-inner">
+        <a class="brand-mark" href="index.html">
+          <img src="assets/logo.svg" width="28" height="28" alt="" />
+          FinMate
+        </a>
+        <a class="nav-link" href="index.html">О проекте</a>
+        <a class="nav-link" href="team.html">Команда</a>
+        <a class="nav-link" href="index.html#stack">Стек</a>
+        <a class="nav-link" href="index.html#mvp">MVP</a>
+        <a class="nav-link" href="index.html#bot">Telegram-бот</a>
+        <a class="nav-link" href="mockup.html" aria-current="page">Макет</a>
+      </div>
+    </nav>
+    <nav class="mockup-subnav" aria-label="Разделы макета">
+      <div class="mockup-subnav-inner">
+        <span class="label">На странице</span>
+        <a href="#telegram">Telegram-бот</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="mockup-page">
+    <header class="hero">
+      <div class="brand">FinMate<br /><em>макет MVP</em></div>
+      <p class="lede">
+        Интерактивный прототип Telegram-бота: голосовое, фото чека или текст с тратой —
+        без ручного заполнения форм.
+      </p>
+      <div class="meta">
+        <span class="chip">Telegram</span>
+        <span class="chip">Голосовое · Чек · Текст</span>
+        <span class="chip">Yandex Cloud AI</span>
+      </div>
+    </header>
+
+    <h2 class="section-title" id="telegram">
+      <span class="section-kind">Интерактивный прототип</span>
+      Клиент · Telegram
+    </h2>
+    <div class="section-intro">
+      <div>
+        <p class="lede">
+          Основной клиент MVP. После согласия на ПДн бот принимает голосовое, фото чека
+          или текст — если в сообщении есть данные о трате.
+        </p>
+        <div class="meta">
+          <span class="chip">Telegram Bot API</span>
+          <span class="chip">Политика и ПДн</span>
+          <span class="chip">Голосовое / чек / текст</span>
+          <span class="chip">/start · /help · /today · /delete</span>
+        </div>
+      </div>
+      <aside class="legend">
+        <h2>Базовый путь</h2>
+        <ol>
+          <li>/start → политика: Принимаю / Не принимаю</li>
+          <li>Принимаю → согласие на ПДн</li>
+          <li>Даю согласие → можно слать голосовое, чек или текст</li>
+          <li>/help — справка по командам и способам ввода</li>
+          <li>Распознавание голосового/чека → Подтвердить / Отправить заново</li>
+          <li>Текст с тратой → сразу сохранено</li>
+          <li>/today → список трат за сегодня</li>
+          <li>/delete → подтверждение → удаление данных; или «Продолжить пользоваться»</li>
+        </ol>
+      </aside>
+    </div>
+
+    <div class="mock-flow-map" id="tg-flow-map"></div>
+
+    <div class="prototype">
+      <div>
+        <div class="tg-phone" aria-label="Макет Telegram-бота">
+          <div class="tg-inner" id="tg-inner">
+            <div class="tg-topbar"><span>12:36</span><span>LTE</span></div>
+            <div class="tg-header">
+              <img src="assets/logo.svg" alt="" width="36" height="36" />
+              <div>
+                <div class="name">FinMate</div>
+                <div class="status">бот</div>
+              </div>
+            </div>
+
+            <div class="tg-attach-menu" id="tg-attach-menu" aria-label="Вложения">
+              <button type="button" data-tg-go="confirm-photo">Фото чека</button>
+              <button type="button" data-tg-go="confirm-voice">Голосовое</button>
+            </div>
+
+            <!-- /start · политика -->
+            <section class="tg-screen active" data-tg-screen="start">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">
+                    /start
+                    <div class="tg-meta"><span>12:36</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    FinMate — помощник по учёту расходов.<br /><br />
+                    Пришлите голосовое, фото чека или текст с суммой — сохраним данные о покупке.<br /><br />
+                    Политика конфиденциальности — по кнопке ниже. Нажимая «Принимаю», вы подтверждаете, что ознакомились
+                    с политикой.
+                    <div class="tg-meta"><span>12:36</span></div>
+                  </div>
+                </div>
+                <div class="tg-inline">
+                  <button type="button" data-tg-go="doc-policy">Политика конфиденциальности</button>
+                  <button type="button" data-tg-go="consent-pdn">Принимаю</button>
+                  <button type="button" data-tg-go="refuse">Не принимаю</button>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="doc-policy">
+              <div class="tg-doc">
+                <div class="tg-doc-bar">
+                  <button type="button" data-tg-go="start">Закрыть</button>
+                  <span class="tg-doc-title">Документ</span>
+                </div>
+                <div class="tg-doc-body">Политика конфиденциальности</div>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="consent-pdn">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">
+                    /start
+                    <div class="tg-meta"><span>12:36</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    FinMate — помощник по учёту расходов.<br /><br />
+                    Пришлите голосовое, фото чека или текст с суммой — сохраним данные о покупке.<br /><br />
+                    Политика конфиденциальности — по кнопке ниже. Нажимая «Принимаю», вы подтверждаете, что ознакомились
+                    с политикой.
+                    <div class="tg-meta"><span>12:36</span></div>
+                  </div>
+                </div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">
+                    Принимаю
+                    <div class="tg-meta"><span>12:36</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    И последний шаг перед началом.<br /><br />
+                    Согласие на обработку персональных данных — текст по кнопке ниже.<br /><br />
+                    Нажимая «Даю согласие», вы даёте согласие на обработку персональных данных. Отозвать — <button
+                      type="button" class="tg-cmd" data-tg-go="delete">/delete</button>.
+                    <div class="tg-meta"><span>12:37</span></div>
+                  </div>
+                </div>
+                <div class="tg-inline">
+                  <button type="button" data-tg-go="doc-pdn">Согласие на обработку ПДн</button>
+                  <button type="button" data-tg-go="ready">Даю согласие</button>
+                  <button type="button" data-tg-go="refuse">Не даю согласие</button>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="doc-pdn">
+              <div class="tg-doc">
+                <div class="tg-doc-bar">
+                  <button type="button" data-tg-go="consent-pdn">Закрыть</button>
+                  <span class="tg-doc-title">Документ</span>
+                </div>
+                <div class="tg-doc-body">Согласие на обработку персональных данных</div>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="ready">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Пришлите голосовое о трате, фото чека или текст с суммой.<br /><br />
+                    Справка — <button type="button" class="tg-cmd" data-tg-go="help">/help</button>,
+                    список за сегодня —
+                    <button type="button" class="tg-cmd" data-tg-go="today">/today</button>.
+                    <div class="tg-meta"><span>12:37</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="help">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">
+                    /help
+                    <div class="tg-meta"><span>12:38</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    <strong>📖 Как пользоваться</strong><br /><br />
+                    FinMate — учёт расходов без ручного ввода.<br /><br />
+                    <strong>Команды</strong><br />
+                    <button type="button" class="tg-cmd" data-tg-go="start">/start</button> — перезапустить бота<br />
+                    <button type="button" class="tg-cmd" data-tg-go="help">/help</button> — эта справка<br />
+                    <button type="button" class="tg-cmd" data-tg-go="today">/today</button> — расходы за сегодня<br />
+                    <button type="button" class="tg-cmd" data-tg-go="delete">/delete</button> — отозвать согласие на ПДн<br /><br />
+                    <strong>Как добавить трату</strong><br /><br />
+                    🎙️ <strong>Голосовое</strong><br />
+                    Запишите сообщение о трате, например: «потратил 450 на обед».<br /><br />
+                    🧾 <strong>Фото чека</strong><br />
+                    Отправьте снимок кассового чека — распознаем сумму.<br /><br />
+                    ✍️ <strong>Текст</strong><br />
+                    Напишите трату обычным сообщением.<br />
+                    Пример: Такси 320&nbsp;₽
+                    <div class="tg-meta"><span>12:38</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="confirm-voice">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user tg-voice">
+                    <span class="tg-voice-play"></span>
+                    <span class="tg-voice-wave"></span>
+                    <span class="tg-voice-dur">0:04</span>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    «Потратил четыреста пятьдесят на обед»<br />
+                    Распознано: <strong>450 ₽</strong> · Обед
+                    <div class="tg-meta"><span>12:38</span></div>
+                  </div>
+                </div>
+                <div class="tg-inline row">
+                  <button type="button" data-tg-go="saved">Подтвердить</button>
+                  <button type="button" data-tg-go="ready">Отправить заново</button>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="confirm-photo">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user media">
+                    <div class="tg-photo" role="img" aria-label="Фото кассового чека"></div>
+                    <div class="tg-meta"><span>12:41</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Распознано: <strong>49,90 ₽</strong> · Продукты
+                    <div class="tg-meta"><span>12:41</span></div>
+                  </div>
+                </div>
+                <div class="tg-inline row">
+                  <button type="button" data-tg-go="saved">Подтвердить</button>
+                  <button type="button" data-tg-go="ready">Отправить заново</button>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="text-saved">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">
+                    Такси 320 ₽
+                    <div class="tg-meta"><span>12:48</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Сохранено: <strong>320 ₽</strong> · Транспорт
+                    <div class="tg-meta"><span>12:48</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="saved">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Расход сохранён.<br /><br />
+                    Можно прислать ещё голосовое, чек или текст — или открыть
+                    <button type="button" class="tg-cmd" data-tg-go="today">/today</button>.
+                    <div class="tg-meta"><span>12:49</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="today">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">
+                    /today
+                    <div class="tg-meta"><span>12:50</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Сегодня:<br />
+                    · Обед — 450 ₽<br />
+                    · Продукты — 49,90 ₽<br />
+                    · Транспорт — 320 ₽<br />
+                    <strong>Итого: 819,90 ₽</strong>
+                    <div class="tg-meta"><span>12:50</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="today-empty">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">
+                    /today
+                    <div class="tg-meta"><span>12:50</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Пока нет сохранённых расходов. Пришлите голосовое, фото чека или текст с тратой.
+                    <div class="tg-meta"><span>12:50</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="retry-request">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Не удалось выделить параметры покупки. Пришлите голосовое, фото чека или текст ещё раз —
+                    например: «кофе 180».
+                    <div class="tg-meta"><span>12:42</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="refuse">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">
+                    Не принимаю
+                    <div class="tg-meta"><span>12:36</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Для использования бота нужно дать согласие на обработку персональных данных.
+                    Чтобы продолжить, нажмите
+                    <button type="button" class="tg-cmd" data-tg-go="start">/start</button>.
+                    <div class="tg-meta"><span>12:36</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="blocked">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user media">
+                    <div class="tg-photo" role="img" aria-label="Фото чека"></div>
+                    <div class="tg-meta"><span>12:36</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Для использования бота нужно дать согласие на обработку персональных данных.
+                    Чтобы продолжить, нажмите
+                    <button type="button" class="tg-cmd" data-tg-go="start">/start</button>.
+                    <div class="tg-meta"><span>12:36</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="failed">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Что-то пошло не так. Попробуйте ещё раз.
+                    <div class="tg-meta"><span>12:36</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="delete">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">
+                    /delete
+                    <div class="tg-meta"><span>12:55</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Это удалит сохранённые расходы и отзовёт согласие на обработку персональных данных.
+                    Действие необратимо.<br /><br />
+                    Подтвердить удаление?
+                    <div class="tg-meta"><span>12:55</span></div>
+                  </div>
+                </div>
+                <div class="tg-inline">
+                  <button type="button" data-tg-go="delete-done">Подтверждаю</button>
+                  <button type="button" data-tg-go="ready">Продолжить пользоваться</button>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+
+            <section class="tg-screen" data-tg-screen="delete-done">
+              <div class="tg-chat">
+                <div class="tg-day">Сегодня</div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">
+                    /delete
+                    <div class="tg-meta"><span>12:55</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Это удалит сохранённые расходы и отзовёт согласие на обработку персональных данных.
+                    Действие необратимо.<br /><br />
+                    Подтвердить удаление?
+                    <div class="tg-meta"><span>12:55</span></div>
+                  </div>
+                </div>
+                <div class="tg-row user">
+                  <div class="tg-bubble user">
+                    Подтверждаю
+                    <div class="tg-meta"><span>12:55</span><span class="tg-checks">✓✓</span></div>
+                  </div>
+                </div>
+                <div class="tg-row bot">
+                  <img class="tg-avatar" src="assets/logo.svg" alt="" width="28" height="28" />
+                  <div class="tg-bubble bot">
+                    Данные удалены, согласие отозвано.<br /><br />
+                    Чтобы снова пользоваться ботом, нажмите
+                    <button type="button" class="tg-cmd" data-tg-go="start">/start</button>.
+                    <div class="tg-meta"><span>12:56</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="tg-composer">
+                <button type="button" class="attach" aria-label="Вложение">+</button>
+                <button type="button" class="input" data-tg-input>Сообщение</button>
+                <button type="button" class="send" aria-label="Отправить">›</button>
+              </div>
+            </section>
+          </div>
+        </div>
+        <div class="nav-dots" id="tg-nav-dots"></div>
+        <p class="screen-label">Сейчас: <strong id="tg-screen-name">/start · политика</strong></p>
+      </div>
+
+      <div class="panel" id="tg-spec-panel"></div>
+    </div>
+
+    <div class="specs">
+      <div class="panel">
+        <h3>Карта экранов</h3>
+        <ul>
+          <li><strong>/start</strong> — политика, затем согласие на ПДн</li>
+          <li><strong>ready</strong> — голосовое, фото чека или текст</li>
+          <li><strong>/help</strong> — справка: команды и способы добавить трату</li>
+          <li><strong>confirm-*</strong> — голосовое и чек: Подтвердить / Отправить заново</li>
+          <li><strong>text-saved</strong> — текст с тратой сохраняется сразу, без кнопок</li>
+          <li><strong>saved</strong> — подтверждение записи</li>
+          <li><strong>/today</strong> — расходы за сегодня или «пока нет расходов»</li>
+          <li><strong>/delete</strong> — подтверждение, затем удаление данных и отзыв согласий</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Особенности FinMate</h3>
+        <ul>
+          <li>Основной путь — голосовое или фото чека</li>
+          <li>Текст тоже обрабатываем, если есть сумма/трата</li>
+          <li>Нет мобильного приложения в MVP</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Визуальное направление</h3>
+        <ul>
+          <li>Тёмный fintech: фон #0f1419, акцент teal</li>
+          <li>Шрифты: Newsreader + Outfit</li>
+          <li>Мокап чата в стиле Telegram</li>
+        </ul>
+      </div>
+    </div>
+
+    <footer class="footer footer-legal">
+      <p><a href="index.html">← На главную</a></p>
+      <p>Проект команды FinMate · <a href="https://geek-tik.tech/teams/finmate">geek-tik.tech</a></p>
+      <p>ИП Сардов Н.С. · ИНН 632304051711 · <a href="mailto:hello@geek-tik.tech">hello@geek-tik.tech</a></p>
+      <nav aria-label="Правовая информация">
+        <a href="https://consent.geek-tik.tech/t/finmate/policy" target="_blank" rel="noopener">Политика
+          конфиденциальности</a>
+        <a href="https://consent.geek-tik.tech/t/finmate/pdn-consent" target="_blank" rel="noopener">Согласие на
+          обработку ПДн</a>
+      </nav>
+    </footer>
+  </div>
+
+  <script>
+    const TG_SCREENS = [
+      {
+        id: "start",
+        name: "/start · политика",
+        blurb: "/start сначала проверяет согласия. Если их нет, бот показывает политику и первый шаг согласия.",
+        bullets: [
+          "Документ — внешняя ссылка",
+          "Если согласия уже есть, бот сразу предлагает прислать голосовое, фото чека или текст",
+          "Принимаю → второе сообщение (согласие на ПДн)",
+          "Не принимаю → отказ",
+          "Шаг не подтвердился — второе сообщение не показывать",
+        ],
+      },
+      {
+        id: "doc-policy",
+        name: "Макет · политика",
+        blurb: "В боте откроется полный текст политики.",
+        bullets: ["Закрыть — назад к /start"],
+      },
+      {
+        id: "consent-pdn",
+        name: "Согласие на ПДн",
+        blurb: "Второе сообщение — только если шаг 1 подтверждён. Кнопка открывает согласие. Отозвать потом командой /delete.",
+        bullets: [
+          "Документ — внешняя ссылка",
+          "Даю согласие → можно слать голосовое, фото чека или текст",
+          "Не даю согласие → тот же отказ",
+          "Шаг не подтвердился — голосовое/чек/текст не пускать",
+        ],
+      },
+      {
+        id: "doc-pdn",
+        name: "Макет · согласие ПДн",
+        blurb: "В боте откроется полный текст согласия.",
+        bullets: ["Закрыть — назад ко второму шагу"],
+      },
+      {
+        id: "ready",
+        name: "Можно отправлять",
+        blurb: "Бот готов: голосовое, фото чека или текст с тратой. Список — /today, справка — /help.",
+        bullets: [
+          "Attach: фото чека или голосовое",
+          "Поле «Сообщение» — текстовая трата",
+          "Отозвать — /delete, не Telegram /stop",
+        ],
+      },
+      {
+        id: "help",
+        name: "/help",
+        blurb: "Справка: команды бота и три способа добавить трату — голосовое, фото чека, текст.",
+        bullets: [
+          "Команды: /start, /help, /today, /delete",
+          "Текст с суммой сохраняется сразу",
+          "Голосовое и чек — с подтверждением",
+        ],
+      },
+      {
+        id: "confirm-voice",
+        name: "Голосовое · подтверждение",
+        blurb: "SpeechKit + LLM: сумма и категория из голосового. Кнопки Подтвердить / Отправить заново.",
+        bullets: ["Основной сценарий MVP", "Отправить заново → ready (можно отправлять)"],
+      },
+      {
+        id: "confirm-photo",
+        name: "Чек · подтверждение",
+        blurb: "Vision OCR: итог чека и категория. Тот же паттерн подтверждения.",
+        bullets: ["Фото из камеры, галереи или файла", "Подтвердить → saved", "Отправить заново → ready"],
+      },
+      {
+        id: "text-saved",
+        name: "Текст · сохранено",
+        blurb: "Если в сообщении есть данные о трате — сохраняем сразу, без шага подтверждения.",
+        bullets: ["Пример: «Такси 320 ₽»", "Без суммы — retry-request", "Как на главной странице"],
+      },
+      {
+        id: "saved",
+        name: "Расход сохранён",
+        blurb: "Короткое подтверждение. Можно сразу прислать следующую трату или открыть /today.",
+        bullets: ["Успех happy path"],
+      },
+      {
+        id: "today",
+        name: "/today · расходы за день",
+        blurb: "Команда /today — список расходов за сегодня и сумма итого.",
+        bullets: ["Без графиков в MVP", "Только текущий день"],
+      },
+      {
+        id: "today-empty",
+        name: "/today · нет расходов",
+        blurb: "Если за сегодня ещё ничего не сохранено — явное сообщение, не пустой список и не ошибка.",
+        bullets: ["Из user flows"],
+      },
+      {
+        id: "retry-request",
+        name: "Повтор запроса",
+        blurb: "Не удалось уверенно выделить трату при уже выданном согласии.",
+        bullets: ["Просим прислать снова", "Без отдельной кнопки"],
+      },
+      {
+        id: "refuse",
+        name: "Отказ",
+        blurb: "«Не принимаю» или «Не даю согласие». Без кнопок дальше.",
+        bullets: ["Голосовое/чек/текст не обрабатываются", "Продолжить — /start"],
+      },
+      {
+        id: "blocked",
+        name: "Без согласия",
+        blurb: "Любой ввод без согласий получает тот же ответ, что и явный отказ.",
+        bullets: ["Продолжить — /start"],
+      },
+      {
+        id: "failed",
+        name: "Ошибка",
+        blurb: "Внутренняя ошибка: короткое сообщение, пользователь пробует снова.",
+        bullets: ["Один короткий текст"],
+      },
+      {
+        id: "delete",
+        name: "/delete · подтверждение",
+        blurb: "Деструктивная команда: удаляет сохранённые расходы и отзывает согласие. Сначала спрашиваем подтверждение.",
+        bullets: [
+          "Подтверждаю → удаление выполнено",
+          "Продолжить пользоваться → ready",
+          "Не путать с Telegram /stop",
+        ],
+      },
+      {
+        id: "delete-done",
+        name: "/delete · удалено",
+        blurb: "Сценарий от /delete до успешного удаления: подтверждение принято, данные и согласия сняты.",
+        bullets: [
+          "Историю чата Telegram не стираем",
+          "Снова /start — с политики",
+        ],
+      },
+    ];
+
+    let tgCurrent = "start";
+    const tgMap = document.getElementById("tg-flow-map");
+    const tgDots = document.getElementById("tg-nav-dots");
+    const tgNameEl = document.getElementById("tg-screen-name");
+    const tgPanel = document.getElementById("tg-spec-panel");
+    const tgAttachMenu = document.getElementById("tg-attach-menu");
+
+    const TG_DOC = new Set(["doc-policy", "doc-pdn"]);
+    const TG_GATED = new Set(["start", "consent-pdn", "refuse", "blocked", "failed", "delete", "delete-done", "doc-policy", "doc-pdn"]);
+
+    TG_SCREENS.forEach((s, i) => {
+      const btn = document.createElement("button");
+      btn.className = "mock-flow-card" + (i === 0 ? " active" : "");
+      btn.dataset.tgGo = s.id;
+      btn.innerHTML = `<strong>${i + 1}. ${s.name}</strong><span>${s.id}</span>`;
+      tgMap.appendChild(btn);
+
+      const dot = document.createElement("button");
+      dot.dataset.tgGo = s.id;
+      if (i === 0) dot.classList.add("active");
+      tgDots.appendChild(dot);
+    });
+
+    function closeTgAttach() {
+      tgAttachMenu.classList.remove("open");
+    }
+
+    function showTg(id) {
+      tgCurrent = id;
+      closeTgAttach();
+      document.getElementById("tg-inner").classList.toggle("is-tg-doc", TG_DOC.has(id));
+      document.querySelectorAll("#tg-inner .tg-screen").forEach((el) => {
+        el.classList.toggle("active", el.dataset.tgScreen === id);
+      });
+      document.querySelectorAll("#tg-flow-map .mock-flow-card, #tg-nav-dots button").forEach((el) => {
+        el.classList.toggle("active", el.dataset.tgGo === id);
+      });
+      const meta = TG_SCREENS.find((s) => s.id === id);
+      tgNameEl.textContent = meta ? meta.name : id;
+      if (meta) {
+        tgPanel.innerHTML =
+          `<h3>${meta.name}</h3><p>${meta.blurb}</p><ul>${meta.bullets.map((b) => `<li>${b}</li>`).join("")}</ul>`;
+      }
+    }
+
+    function resolveInputTarget() {
+      if (TG_GATED.has(tgCurrent)) return "blocked";
+      return "text-saved";
+    }
+
+    function resolveAttachTarget(wanted) {
+      if (TG_GATED.has(tgCurrent)) return "blocked";
+      return wanted;
+    }
+
+    document.body.addEventListener("click", (e) => {
+      const attachBtn = e.target.closest(".tg-composer .attach");
+      if (attachBtn) {
+        e.stopPropagation();
+        tgAttachMenu.classList.toggle("open");
+        return;
+      }
+
+      const inputBtn = e.target.closest("[data-tg-input]");
+      if (inputBtn) {
+        showTg(resolveInputTarget());
+        return;
+      }
+
+      const tgGo = e.target.closest("[data-tg-go]");
+      if (tgGo) {
+        let id = tgGo.dataset.tgGo;
+        if (id === "confirm-photo" || id === "confirm-voice") {
+          id = resolveAttachTarget(id);
+        }
+        showTg(id);
+        return;
+      }
+
+      if (!e.target.closest("#tg-attach-menu")) {
+        closeTgAttach();
+      }
+    });
+
+    showTg("start");
+  </script>
+  <script src="cookie-notice.js" data-policy-href="https://consent.geek-tik.tech/t/finmate/policy"></script>
+</body>
+
+</html>
