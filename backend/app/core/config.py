@@ -25,7 +25,15 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str = "super-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
+    # Продление сессии — только через refresh-токен.
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    # Время жизни refresh-токена (по умолчанию 30 дней)
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 30
+
+    BOT_SERVICE_KEY: str = os.getenv(
+        'BOT_SERVICE_KEY',
+        ''
+    )
 
     ADMIN_USERNAME: str = os.getenv(
         'ADMIN_USERNAME',

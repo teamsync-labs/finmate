@@ -7,11 +7,11 @@ from typing import Optional
 
 from pydantic import BaseModel, field_validator
 
-VALID_ACCOUNT_TYPES = {
-    "cash", "bank",
-    "credit", "investment",
-    "savings"
-}
+from app.core.constants import (
+    DEFAULT_CURRENCY,
+    MAX_CURRENCY_CODE_LENGTH,
+    VALID_ACCOUNT_TYPES,
+)
 
 
 class AccountCreate(BaseModel):
@@ -20,7 +20,7 @@ class AccountCreate(BaseModel):
     name: str
     type: str
     balance: float = 0.0
-    currency: str = "RUB"
+    currency: str = DEFAULT_CURRENCY
     credit_limit: Optional[float] = None
 
     @field_validator("type")
@@ -43,7 +43,7 @@ class AccountCreate(BaseModel):
     @field_validator("currency")
     @classmethod
     def validate_currency(cls, v: str) -> str:
-        if len(v) != 3 or not v.isalpha():
+        if len(v) != MAX_CURRENCY_CODE_LENGTH or not v.isalpha():
             raise ValueError("Currency must be a 3-letter ISO code")
         return v.upper()
 

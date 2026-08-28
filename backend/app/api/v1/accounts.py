@@ -44,6 +44,7 @@ def create_expense(
     db: Session = Depends(get_db),
 ):
     """Create a new expense."""
+
     expense = Expenses(
         user_id=current_user.id,
         expense_name=payload.expense_name,
@@ -64,6 +65,7 @@ def get_expense(
     db: Session = Depends(get_db),
 ):
     """Get a specific expense by ID."""
+
     expense = db.query(Expenses).filter(
         Expenses.id == expense_id,
         Expenses.user_id == current_user.id,
@@ -84,6 +86,7 @@ def update_expense(
     db: Session = Depends(get_db),
 ):
     """Update an expense."""
+
     expense = db.query(Expenses).filter(
         Expenses.id == expense_id,
         Expenses.user_id == current_user.id,
@@ -110,6 +113,7 @@ def delete_expense(
     db: Session = Depends(get_db),
 ):
     """Delete an expense."""
+
     expense = db.query(Expenses).filter(
         Expenses.id == expense_id,
         Expenses.user_id == current_user.id,

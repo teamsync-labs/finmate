@@ -33,9 +33,23 @@ class UserResponse(BaseModel):
 
 
 class AuthResponse(BaseModel):
-    """Ответ аутентификации: токен + полные данные."""
+    """Ответ аутентификации: токены + полные данные."""
 
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
+    id: int
     telegram_id: int
     username: Optional[str] = None
+
+
+class RefreshRequest(BaseModel):
+    """Запрос на обновление пары токенов по refresh-токену."""
+
+    refresh_token: str
+
+
+class LogoutRequest(BaseModel):
+    """Запрос на выход: отзыв refresh-токена."""
+
+    refresh_token: str

@@ -1,8 +1,16 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Integer, String, DateTime, BigInteger, JSON
+from sqlalchemy import (
+    BigInteger,
+    Column,
+    DateTime,
+    Integer,
+    JSON,
+    String,
+)
 from sqlalchemy.orm import relationship, validates
 
+from app.core.constants import MAX_USERNAME_LENGTH
 from app.core.database import Base
 
 
@@ -14,26 +22,26 @@ class User(Base):
     id = Column(
         Integer,
         primary_key=True,
-        index=True
+        index=True,
     )
     telegram_id = Column(
         BigInteger,
         unique=True,
         index=True,
-        nullable=False
+        nullable=False,
     )
     username = Column(
-        String(255),
-        nullable=True
+        String(MAX_USERNAME_LENGTH),
+        nullable=True,
     )
     settings = Column(
         JSON,
         default=dict,
-        nullable=True
+        nullable=True,
     )
     created_at = Column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc)
+        default=lambda: datetime.now(timezone.utc),
     )
 
     # Relationships

@@ -5,11 +5,13 @@ from typing import Optional
 
 from pydantic import BaseModel, field_validator
 
-VALID_EXPENSE_TYPES = {
-    "general", "food", "transport",
-    "housing", "utilities", "entertainment",
-    "health", "education", "shopping", "other",
-}
+from app.core.constants import (
+    DEFAULT_CURRENCY,
+    DEFAULT_EXPENSE_TYPE,
+    MAX_CURRENCY_CODE_LENGTH,
+    MAX_EXPENSE_NAME_LENGTH,
+    VALID_EXPENSE_TYPES,
+)
 
 
 class ExpenseCreate(BaseModel):
@@ -17,8 +19,8 @@ class ExpenseCreate(BaseModel):
 
     expense_name: str
     amount: float = 0.0
-    type: str = "general"
-    currency: str = "RUB"
+    type: str = DEFAULT_EXPENSE_TYPE
+    currency: str = DEFAULT_CURRENCY
 
     @field_validator("expense_name")
     @classmethod
@@ -26,8 +28,11 @@ class ExpenseCreate(BaseModel):
         v = v.strip()
         if not v:
             raise ValueError("Expense name cannot be empty")
-        if len(v) > 100:
-            raise ValueError("Expense name must be 100 characters or less")
+        if len(v) > MAX_EXPENSE_NAME_LENGTH:
+            raise ValueError(
+                f"Expense name must be {MAX_EXPENSE_NAME_LENGTH} "
+                "characters or less"
+            )
         return v
 
     @field_validator("type")
@@ -50,7 +55,7 @@ class ExpenseCreate(BaseModel):
     @field_validator("currency")
     @classmethod
     def validate_currency(cls, v: str) -> str:
-        if len(v) != 3 or not v.isalpha():
+        if len(v) != MAX_CURRENCY_CODE_LENGTH or not v.isalpha():
             raise ValueError("Currency must be a 3-letter ISO code")
         return v.upper()
 
@@ -70,8 +75,11 @@ class ExpenseUpdate(BaseModel):
             v = v.strip()
             if not v:
                 raise ValueError("Expense name cannot be empty")
-            if len(v) > 100:
-                raise ValueError("Expense name must be 100 characters or less")
+            if len(v) > MAX_EXPENSE_NAME_LENGTH:
+                raise ValueError(
+                    f"Expense name must be {MAX_EXPENSE_NAME_LENGTH} "
+                    "characters or less"
+                )
         return v
 
     @field_validator("type")
@@ -95,7 +103,7 @@ class ExpenseUpdate(BaseModel):
     @classmethod
     def validate_currency(cls, v: Optional[str]) -> Optional[str]:
         if v is not None:
-            if len(v) != 3 or not v.isalpha():
+            if len(v) != MAX_CURRENCY_CODE_LENGTH or not v.isalpha():
                 raise ValueError("Currency must be a 3-letter ISO code")
             v = v.upper()
         return v

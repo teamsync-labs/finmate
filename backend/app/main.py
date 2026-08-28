@@ -8,6 +8,11 @@ from sqlalchemy import text
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import settings
+from app.core.constants import (
+    APP_CONTACT_EMAIL,
+    APP_CONTACT_NAME,
+    APP_VERSION,
+)
 from app.core.database import engine, Base
 from app.api.v1 import auth, accounts, report
 from app.admin import register_admin
@@ -25,8 +30,11 @@ app = FastAPI(
         "API финансового помощника"
         " с автоматической категоризацией и учётом транзакций"
     ),
-    version="1.0.0",
-    contact={"name": "Команда FinSight", "email": "dev@finsight.example.com"},
+    version=APP_VERSION,
+    contact={
+        "name": APP_CONTACT_NAME,
+        "email": APP_CONTACT_EMAIL,
+    },
     swagger_ui_parameters={"persistAuthorization": True},
     lifespan=lifespan,
 )

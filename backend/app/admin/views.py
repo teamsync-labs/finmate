@@ -11,6 +11,12 @@ from wtforms import SelectField
 
 from app.admin.auth import AdminAuth
 from app.core.config import settings
+from app.core.constants import (
+    ADMIN_BASE_URL,
+    ADMIN_TITLE,
+    EXPENSE_TYPE_CHOICES,
+    UNCATEGORIZED_CATEGORY,
+)
 from app.core.database import SessionLocal, engine
 from app.models.user import User
 from app.models.expenses import Expenses
@@ -135,7 +141,9 @@ class ReportAdmin(BaseView):
         # Расходы без категории относим к "other".
         grouped: dict[str, list[Expenses]] = {}
         for expense in expenses:
-            grouped.setdefault(expense.type or "other", []).append(expense)
+            grouped.setdefault(
+                expense.type or UNCATEGORIZED_CATEGORY, []
+            ).append(expense)
 
         categories = [
             {
@@ -250,19 +258,8 @@ class ExpenseAdmin(ModelView, model=Expenses):
     }
     form_args = {
         "type": {
-            "choices": [
-                ("general", "Общее"),
-                ("food", "Продукты"),
-                ("transport", "Транспорт"),
-                ("housing", "Жильё"),
-                ("utilities", "Коммунальные"),
-                ("entertainment", "Развлечения"),
-                ("health", "Здоровье"),
-                ("education", "Образование"),
-                ("shopping", "Покупки"),
-                ("other", "Другое"),
-            ]
-        },
+            "choices": list(EXPENSE_TYPE_CHOICES),
+        }
     }
 
     can_create = True
@@ -280,8 +277,8 @@ def register_admin(app):
         app=app,
         engine=engine,
         authentication_backend=auth_backend,
-        title="FinSight Admin",
-        base_url="/admin",
+        title=ADMIN_TITLE,
+        base_url=ADMIN_BASE_URL,
         logo_url=None,
     )
 

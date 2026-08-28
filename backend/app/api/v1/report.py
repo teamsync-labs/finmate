@@ -4,6 +4,7 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
+from app.core.constants import UNCATEGORIZED_CATEGORY
 from app.core.security import get_current_user
 from app.models.user import User
 from app.models.expenses import Expenses
@@ -46,7 +47,9 @@ def period_report(
     # Расходы без категории относим к "other".
     grouped: dict[str, list[Expenses]] = {}
     for expense in expenses:
-        grouped.setdefault(expense.type or "other", []).append(expense)
+        grouped.setdefault(
+            expense.type or UNCATEGORIZED_CATEGORY, []
+        ).append(expense)
 
     categories = [
         CategoryReport(

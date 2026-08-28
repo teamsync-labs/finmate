@@ -1,31 +1,48 @@
 """
-Фикстуры для тестов.
-Переопределяем БД на SQLite in-memory и подменяем зависимость get_db.
+Общие фикстуры и фабрики для тестов.
+
+БД переопределяется на SQLite in-memory (единое подключение через
+StaticPool), а зависимость get_db подменяется на тестовую сессию —
+чтобы тесты не затрагивали реальную базу приложения.
 """
+
+from collections.abc import Generator
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
 
-from app.main import app
 from app.core.database import Base, get_db
+from app.main import app
 
-# Используем SQLite в памяти для тестов
-TEST_DATABASE_URL = "sqlite:///./test.db"
-
-engine = create_engine(
-    TEST_DATABASE_URL,
+_engine = create_engine(
+    "sqlite://",
     connect_args={"check_same_thread": False},
-)
-TestingSessionLocal = sessionmaker(
-    autocommit=False, autoflush=False, bind=engine
+    poolclass=StaticPool,
 )
 
+_TestingSessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=_engine,
+)
 
-def override_get_db():
-    """Подменяем зависимость get_db на тестовую сессию."""
-    db = TestingSessionLocal()
+AUTH_URL = "/api/v1/auth/telegram"
+
+
+def bearer_headers(auth: dict[str, Any]) -> dict[str, str]:
+    """Заголовки Authorization по ответу аутентификации."""
+
+    return {"Authorization": f"Bearer {auth['access_token']}"}
+
+
+def _override_get_db() -> Generator[Session, None, None]:
+    """Возвращает тестовую сессию БД вместо реальной."""
+
+    db = _TestingSessionLocal()
     try:
         yield db
     finally:
@@ -33,17 +50,19 @@ def override_get_db():
 
 
 @pytest.fixture(autouse=True)
-def setup_db():
-    """Создаём таблицы перед каждым тестом, удаляем после."""
-    Base.metadata.create_all(bind=engine)
+def _setup_db() -> Generator[None, None, None]:
+    """Создаёт схему БД до теста и полностью очищает её после."""
+
+    Base.metadata.create_all(bind=_engine)
     yield
-    Base.metadata.drop_all(bind=engine)
+    Base.metadata.drop_all(bind=_engine)
 
 
 @pytest.fixture
-def db_session():
-    """Сессия БД для прямого использования в тестах (опционально)."""
-    db = TestingSessionLocal()
+def db_session() -> Generator[Session, None, None]:
+    """Прямая сессия БД для подготовки данных в тестах."""
+
+    db = _TestingSessionLocal()
     try:
         yield db
     finally:
@@ -51,9 +70,47 @@ def db_session():
 
 
 @pytest.fixture
-def client():
-    """Тестовый клиент FastAPI с подменённой БД."""
-    app.dependency_overrides[get_db] = override_get_db
-    with TestClient(app) as c:
-        yield c
-    app.dependency_overrides.clear()
+def client() -> Generator[TestClient, None, None]:
+    """Тестовый клиент FastAPI с подменённой зависимостью get_db."""
+
+    previous_overrides = app.dependency_overrides.copy()
+    app.dependency_overrides[get_db] = _override_get_db
+    try:
+        yield TestClient(app)
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(previous_overrides)
+
+
+@pytest.fixture
+def register_user(client: TestClient):
+    """
+    Фабрика регистрации/логина пользователя через Telegram.
+
+    Возвращает ответ AuthResponse (токены + данные пользователя).
+    """
+
+    def _register(
+        telegram_id: int,
+        username: str | None = None,
+    ) -> dict[str, Any]:
+        payload: dict[str, Any] = {"telegram_id": telegram_id}
+        if username is not None:
+            payload["username"] = username
+        response = client.post(AUTH_URL, json=payload)
+        assert response.status_code == 200, response.text
+        return response.json()
+    return _register
+
+
+@pytest.fixture
+def auth_headers(register_user):
+    """Фабрика заголовков Authorization для авторизованного пользователя."""
+
+    def _headers(
+        telegram_id: int = 100500,
+        username: str | None = None,
+    ) -> dict[str, str]:
+        return bearer_headers(register_user(telegram_id, username))
+
+    return _headers
