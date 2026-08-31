@@ -3,6 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from config import PDN_CONSENT_URL, POLICY_URL
+from services.api_client import register_user
 
 router_start = Router()
 
@@ -39,6 +40,27 @@ async def process_accept_policy(callback: CallbackQuery):
 
 @router_start.callback_query(F.data == "accept_pdn")
 async def process_accept_pdn(callback: CallbackQuery):
+    # Все соглашения приняты — создаём пользователя на backend.
+    telegram_id = callback.from_user.id
+    username = callback.from_user.username
+    try:
+        response = await register_user(telegram_id, username)
+    except Exception as e:
+        print(f"Ошибка регистрации пользователя: {type(e).__name__}: {e}")
+        await callback.message.answer(
+            "Что-то пошло не так. Попробуйте позже."
+        )
+        await callback.answer()
+        return
+
+    if response.status_code != 200:
+        print(f"Ошибка регистрации пользователя: {response.status_code}")
+        await callback.message.answer(
+            "Не удалось зарегистрировать пользователя. Попробуйте позже."
+        )
+        await callback.answer()
+        return
+
     await callback.message.answer(
         "Пришлите голосовое о трате, фото чека или текст с суммой.\n\n"
         "Справка — /help, список за сегодня — /today."

@@ -146,5 +146,9 @@ class TestReport:
         """date_from позже date_to — 422 Validation Error."""
 
         payload = {"date_from": "2025-07-01", "date_to": "2025-06-01"}
-        response = client.post(REPORTS_URL, json=payload, headers=auth_headers())
+        response = client.post(
+            REPORTS_URL,
+            json=payload,
+            headers=auth_headers()
+        )
         assert response.status_code == 422

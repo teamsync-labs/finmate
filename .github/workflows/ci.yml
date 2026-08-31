@@ -32,6 +32,15 @@ jobs:
       - name: Build backend image
         run: docker build -t finmate-backend:ci ./backend
 
+  bot-image:
+    name: Bot image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build bot image
+        run: docker build -t finmate-bot:ci ./bot
+
   backend-import:
     name: Backend import smoke
     runs-on: ubuntu-latest

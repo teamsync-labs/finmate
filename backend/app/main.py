@@ -17,7 +17,7 @@ from app.core.constants import (
     APP_VERSION,
 )
 from app.core.database import engine, Base
-from app.api.v1 import auth, accounts, report
+from app.api.v1 import auth, accounts, report, transactions
 from app.admin import register_admin
 
 
@@ -29,7 +29,10 @@ _docs_basic = HTTPBasic(auto_error=True)
 def _require_docs_basic(
     credentials: Annotated[HTTPBasicCredentials, Depends(_docs_basic)],
 ) -> None:
-    if credentials.username != _DOCS_USER or credentials.password != _DOCS_PASSWORD:
+    if (
+        credentials.username != _DOCS_USER
+        or credentials.password != _DOCS_PASSWORD
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="unauthorized",
@@ -75,6 +78,7 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(accounts.router, prefix=settings.API_V1_PREFIX)
 app.include_router(report.router, prefix=settings.API_V1_PREFIX)
+app.include_router(transactions.router, prefix=settings.API_V1_PREFIX)
 
 
 # Register admin panel

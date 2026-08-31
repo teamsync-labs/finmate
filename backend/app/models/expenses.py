@@ -34,7 +34,10 @@ class Expenses(Base):
         nullable=True,
         default=DEFAULT_EXPENSE_TYPE,
     )
-    currency = Column(String(MAX_CURRENCY_CODE_LENGTH), default=DEFAULT_CURRENCY)
+    currency = Column(
+        String(MAX_CURRENCY_CODE_LENGTH),
+        default=DEFAULT_CURRENCY
+    )
 
     created_at = Column(
         DateTime(timezone=True),

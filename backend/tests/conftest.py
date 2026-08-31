@@ -15,6 +15,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from app.core.config import settings
 from app.core.database import Base, get_db
 from app.main import app
 
@@ -47,6 +48,19 @@ def _override_get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
+
+
+@pytest.fixture(autouse=True)
+def _force_production_ai_mode(monkeypatch) -> None:
+    """AI-вызовы в тестах по умолчанию идут в «продовой» режим.
+
+    То есть services.transactions маршрутизируют LLM/OCR в моки
+    services.yandex (DEBUG=False), независимо от значений .env
+    разработчика. Debug-тесты Ollama сами выставляют DEBUG=True.
+    """
+
+    monkeypatch.setattr(settings, "DEBUG", False)
+    yield
 
 
 @pytest.fixture(autouse=True)

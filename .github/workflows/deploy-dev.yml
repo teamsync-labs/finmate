@@ -52,6 +52,7 @@ jobs:
             echo "prefix=${PREFIX}"
             echo "frontend=${PREFIX}-frontend:${TAG}"
             echo "backend=${PREFIX}-backend:${TAG}"
+            echo "bot=${PREFIX}-bot:${TAG}"
             echo "nginx_bind=${NGINX_BIND}"
             echo "app_public_url=${APP_PUBLIC_URL}"
             echo "healthcheck_url=${HEALTHCHECK_URL}"
@@ -61,12 +62,14 @@ jobs:
         run: |
           docker build -t "${{ steps.meta.outputs.frontend }}" ./frontend
           docker build -t "${{ steps.meta.outputs.backend }}" ./backend
+          docker build -t "${{ steps.meta.outputs.bot }}" ./bot
 
       - name: Save images
         run: |
           docker save \
             "${{ steps.meta.outputs.frontend }}" \
             "${{ steps.meta.outputs.backend }}" \
+            "${{ steps.meta.outputs.bot }}" \
             | gzip > /tmp/finmate-images.tar.gz
 
       - name: Setup SSH
@@ -102,6 +105,10 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           ADMIN_USERNAME: ${{ vars.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          BOT_SERVICE_KEY: ${{ secrets.BOT_SERVICE_KEY }}
+          CONSENT_PUBLIC_BASE: ${{ vars.CONSENT_PUBLIC_BASE }}
+          TELEGRAM_PROXY: ${{ vars.TELEGRAM_PROXY }}
           NGINX_PORT: ${{ vars.NGINX_PORT }}
           NGINX_BIND: ${{ steps.meta.outputs.nginx_bind }}
           ACCESS_VIA_DOMAIN: ${{ vars.ACCESS_VIA_DOMAIN }}

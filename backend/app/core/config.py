@@ -35,6 +35,41 @@ class Settings(BaseSettings):
         ''
     )
 
+    YANDEX_FOLDER_ID: str = os.getenv('YANDEX_FOLDER_ID', '')
+    YANDEX_API_KEY: str = os.getenv('YANDEX_API_KEY', '')
+    YANDEX_GPT_MODEL: str = os.getenv('YANDEX_GPT_MODEL', 'yandexgpt/latest')
+    YANDEX_OCR_URL: str = os.getenv(
+        'YANDEX_OCR_URL',
+        'https://ocr.api.cloud.yandex.net/ocr/v1/recognizeText',
+    )
+    YANDEX_LLM_URL: str = os.getenv(
+        'YANDEX_LLM_URL',
+        'https://llm.api.cloud.yandex.net/v1/chat/completions',
+    )
+    YANDEX_STT_URL: str = os.getenv(
+        'YANDEX_STT_URL',
+        'https://stt.api.cloud.yandex.net/speech/v1/stt:recognize',
+    )
+    YANDEX_AI_TIMEOUT_SECONDS: float = float(
+        os.getenv('YANDEX_AI_TIMEOUT_SECONDS', '60.0')
+    )
+    MAX_UPLOAD_BYTES: int = int(
+        os.getenv('MAX_UPLOAD_BYTES', str(10 * 1024 * 1024))
+    )
+
+    # Локальная Ollama — используется в dev-режиме (DEBUG=True)
+    # вместо Yandex Cloud: llm_chat → OLLAMA_MODEL, OCR → OLLAMA_OCR_MODEL.
+    # В Docker вместо localhost используйте http://host.docker.internal:11434.
+    OLLAMA_BASE_URL: str = os.getenv(
+        'OLLAMA_BASE_URL',
+        'http://localhost:11434',
+    )
+    OLLAMA_MODEL: str = os.getenv('OLLAMA_MODEL', 'gemma3:4b')
+    OLLAMA_OCR_MODEL: str = os.getenv('OLLAMA_OCR_MODEL', 'llava')
+    OLLAMA_TgIMEOUT_SECONDS: float = float(
+        os.getenv('OLLAMA_TIMEOUT_SECONDS', '120.0')
+    )
+
     ADMIN_USERNAME: str = os.getenv(
         'ADMIN_USERNAME',
         'admin'
@@ -68,10 +103,13 @@ class Settings(BaseSettings):
         if self.DATABASE_URL:
             return self.DATABASE_URL
         if self.DEBUG:
-            return f"sqlite:///{BASE_DIR / 'finsight.db'}"
-        return (
-            f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
-            f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+            return "sqlite:///" + str(BASE_DIR / "finsight.db")
+        return "postgresql://{user}:{password}@{host}:{port}/{db}".format(
+            user=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_HOST,
+            port=self.POSTGRES_PORT,
+            db=self.POSTGRES_DB,
         )
 
 
