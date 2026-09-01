@@ -72,25 +72,29 @@ async def send_text(text: str, telegram_id: int):
 def format_transaction(data: dict) -> str:
     """Форматирует ParsedTransaction из backend в читаемое сообщение."""
 
-    lines = []
     amount = data.get("amount")
+    merchant = data.get("merchant")
+    items = data.get("items") or []
+    summary = data.get("raw_summary")
+    category = data.get("category")
+
+    # Распознать ничего не удалось (суммы нет, остальное пустое).
+    # Не показываем бессмысленное «Категория: general» — лучше честно
+    # сообщить об ошибке распознавания.
+    if amount is None and not merchant and not items and not summary:
+        return "Не удалось распознать расход. Попробуйте ещё раз."
+
+    lines = []
     if amount is not None:
         lines.append(f"Сумма: {amount} {data.get('currency', 'RUB')}")
-    merchant = data.get("merchant")
     if merchant:
         lines.append(f"Место: {merchant}")
-    category = data.get("category")
     if category:
         lines.append(f"Категория: {category}")
-    items = data.get("items") or []
     if items:
         lines.append("Позиции: " + ", ".join(items))
-    summary = data.get("raw_summary")
     if summary:
         lines.append(f"{summary}")
-
-    if not lines:
-        return "Не удалось распознать расход. Попробуйте ещё раз."
 
     if data.get("expense_id") is not None:
         lines.append("Сохранено в вашем учёте.")

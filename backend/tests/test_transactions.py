@@ -229,7 +229,7 @@ class TestVoiceEndpoint:
         service_key,
         monkeypatch
     ):
-        """STT вернул пустой текст — не ходим в LLM."""
+        """STT вернул пустой текст — 422, LLM не зовём."""
 
         register_user(TELEGRAM_ID)
 
@@ -249,17 +249,15 @@ class TestVoiceEndpoint:
             files={"voice": ("voice.ogg", b"fake", "audio/ogg")},
             headers=_service_headers(),
         )
-        assert response.status_code == 200
-        assert response.json()["transcript"] == ""
-        assert response.json()["amount"] is None
-        assert response.json()["expense_id"] is None
+        assert response.status_code == 422
+        assert "распознать" in response.json()["detail"]
 
     def test_voice_empty_transcript_not_saved(
         self, client, register_user,
         service_key, monkeypatch,
         db_session
     ):
-        """Без суммы расход в БД не создаётся."""
+        """Пустой транскрипт — 422, в БД ничего не создаётся."""
 
         register_user(TELEGRAM_ID)
 
@@ -273,8 +271,7 @@ class TestVoiceEndpoint:
             files={"voice": ("voice.ogg", b"fake", "audio/ogg")},
             headers=_service_headers(),
         )
-        assert response.status_code == 200
-        assert response.json()["expense_id"] is None
+        assert response.status_code == 422
 
         count = db_session.query(Expenses).count()
         assert count == 0
@@ -375,6 +372,33 @@ class TestPhotoEndpoint:
             headers=_service_headers(),
         )
         assert response.status_code == 413
+
+    def test_photo_empty_ocr(
+        self, client, register_user,
+        service_key, monkeypatch
+    ):
+        """OCR вернул пустой текст — 422, а не «Категория: general»."""
+
+        register_user(TELEGRAM_ID)
+
+        async def fake_ocr(jpeg_bytes: bytes) -> str:
+            return "   "
+
+        monkeypatch.setattr(yandex, "ocr_recognize", fake_ocr)
+        monkeypatch.setattr(
+            yandex, "llm_chat",
+            lambda prompt: (_ for _ in ()).throw(
+                AssertionError("не должны звать LLM при пустом OCR")
+            )
+        )
+
+        response = client.post(
+            PHOTO_URL,
+            files={"photo": ("receipt.jpg", _make_jpeg(), "image/jpeg")},
+            headers=_service_headers(),
+        )
+        assert response.status_code == 422
+        assert "распознал" in response.json()["detail"]
 
 
 class TestDebugOllamaRouting:

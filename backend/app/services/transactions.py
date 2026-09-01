@@ -115,7 +115,10 @@ async def process_voice(audio_bytes: bytes) -> ParsedTransaction:
 
     transcript = (await _stt_recognize(audio_bytes)).strip()
     if not transcript:
-        return ParsedTransaction(transcript="")
+        raise ValueError(
+            "Не удалось распознать речь в голосовом сообщении. "
+            "Попробуйте записать голосовое ещё раз."
+        )
     raw_llm = await _llm_chat(
         _build_prompt("голосовое сообщение", transcript)
     )
@@ -123,12 +126,21 @@ async def process_voice(audio_bytes: bytes) -> ParsedTransaction:
 
 
 async def process_photo(photo_bytes: bytes) -> ParsedTransaction:
-    """Фото → JPEG → OCR → структура расхода (LLM)."""
+    """Фото → JPEG → OCR → структура расхода (LLM).
+
+    Если OCR не увидел ни одного символа — это не «расход без суммы»,
+    а именно ошибка распознавания. Кидаем ValueError (на API маппится
+    в 422), чтобы бот показал «не удалось распознать чек», а не
+    дефолтную категорию general с пустыми полями.
+    """
 
     jpeg = _to_jpeg(photo_bytes)
     ocr_text = (await _ocr_recognize(jpeg)).strip()
     if not ocr_text:
-        return ParsedTransaction(raw_ocr_text="")
+        raise ValueError(
+            "OCR не распознал текст на изображении. "
+            "Пришлите более чёткое фото чека."
+        )
     raw_llm = await _llm_chat(_build_prompt("текст чека", ocr_text))
     return _transaction_from_llm(raw_llm, raw_ocr_text=ocr_text)
 

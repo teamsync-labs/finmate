@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     )
     OLLAMA_MODEL: str = os.getenv('OLLAMA_MODEL', 'gemma3:4b')
     OLLAMA_OCR_MODEL: str = os.getenv('OLLAMA_OCR_MODEL', 'llava')
-    OLLAMA_TgIMEOUT_SECONDS: float = float(
+    OLLAMA_TIMEOUT_SECONDS: float = float(
         os.getenv('OLLAMA_TIMEOUT_SECONDS', '120.0')
     )
 
