@@ -1,12 +1,15 @@
 import asyncio
 
 from aiogram import Bot, Dispatcher
+from aiogram.client.session.aiohttp import AiohttpSession
 
-from config import TOKEN
+from config import TELEGRAM_PROXY, TOKEN
 from handlers import router_start, router_voice, router_photo, router_text, router_report
 
+
 async def main():
-    bot = Bot(token=TOKEN)
+    session = AiohttpSession(proxy=TELEGRAM_PROXY) if TELEGRAM_PROXY else None
+    bot = Bot(token=TOKEN, session=session)
     dp = Dispatcher()
 
     dp.include_router(router_start)

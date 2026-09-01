@@ -26,6 +26,9 @@ write_kv_compose() {
 : "${SECRET_KEY:?}"
 : "${ADMIN_USERNAME:?}"
 : "${ADMIN_PASSWORD:?}"
+: "${TELEGRAM_BOT_TOKEN:?}"
+: "${BOT_SERVICE_KEY:?}"
+: "${CONSENT_PUBLIC_BASE:?}"
 : "${NGINX_PORT:?}"
 : "${NGINX_BIND:?}"
 : "${ACCESS_VIA_DOMAIN:?}"
@@ -54,6 +57,12 @@ write_kv_compose DATABASE_URL "$DATABASE_URL"
 write_kv_compose SECRET_KEY "$SECRET_KEY"
 write_kv_compose ADMIN_USERNAME "$ADMIN_USERNAME"
 write_kv_compose ADMIN_PASSWORD "$ADMIN_PASSWORD"
+
+# Telegram bot
+write_kv_compose TELEGRAM_BOT_TOKEN "$TELEGRAM_BOT_TOKEN"
+write_kv_compose BOT_SERVICE_KEY "$BOT_SERVICE_KEY"
+write_kv_compose CONSENT_PUBLIC_BASE "$CONSENT_PUBLIC_BASE"
+write_kv_compose TELEGRAM_PROXY "${TELEGRAM_PROXY:-}"
 
 write_kv_compose NGINX_PORT "$NGINX_PORT"
 write_kv_compose NGINX_BIND "$NGINX_BIND"

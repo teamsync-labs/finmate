@@ -48,7 +48,8 @@ services:
       API_V1_PREFIX: ${API_V1_PREFIX:-/api/v1}
       SECRET_KEY: ${SECRET_KEY:-change-me}
       ALGORITHM: ${ALGORITHM:-HS256}
-      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-10080}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+      BOT_SERVICE_KEY: ${BOT_SERVICE_KEY:-}
       POSTGRES_USER: ${POSTGRES_USER:-finsight}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-finsight}
       POSTGRES_HOST: db
@@ -57,7 +58,21 @@ services:
       DATABASE_URL: ${DATABASE_URL:-}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      # Yandex Cloud AI
+      YANDEX_FOLDER_ID: ${YANDEX_FOLDER_ID:-}
+      YANDEX_API_KEY: ${YANDEX_API_KEY:-}
+      YANDEX_GPT_MODEL: ${YANDEX_GPT_MODEL:-yandexgpt/latest}
+      YANDEX_AI_TIMEOUT_SECONDS: ${YANDEX_AI_TIMEOUT_SECONDS:-60}
+      MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-10485760}
+      # Локальная Ollama (используется при DEBUG=true).
+      # host.docker.internal — хост из контейнера (см. extra_hosts ниже).
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL}
+      OLLAMA_OCR_MODEL: ${OLLAMA_OCR_MODEL}
+      OLLAMA_TIMEOUT_SECONDS: ${OLLAMA_TIMEOUT_SECONDS:-120}
       PYTHONUNBUFFERED: "1"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       db:
         condition: service_healthy
@@ -73,6 +88,23 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    restart: unless-stopped
+
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    image: ${IMAGE_PREFIX:-finmate}-bot:${IMAGE_TAG:-latest}
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_PROXY: ${TELEGRAM_PROXY:-}
+      BASE_URL: ${BOT_BASE_URL:-http://backend:8000}
+      BOT_SERVICE_KEY: ${BOT_SERVICE_KEY:-}
+      CONSENT_PUBLIC_BASE: ${CONSENT_PUBLIC_BASE:-}
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
   nginx:

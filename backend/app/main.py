@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
-from typing import Annotated
 import logging
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,8 +11,13 @@ from sqlalchemy import text
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import settings
+from app.core.constants import (
+    APP_CONTACT_EMAIL,
+    APP_CONTACT_NAME,
+    APP_VERSION,
+)
 from app.core.database import engine, Base
-from app.api.v1 import auth, accounts
+from app.api.v1 import auth, accounts, report, transactions
 from app.admin import register_admin
 
 
@@ -24,7 +29,10 @@ _docs_basic = HTTPBasic(auto_error=True)
 def _require_docs_basic(
     credentials: Annotated[HTTPBasicCredentials, Depends(_docs_basic)],
 ) -> None:
-    if credentials.username != _DOCS_USER or credentials.password != _DOCS_PASSWORD:
+    if (
+        credentials.username != _DOCS_USER
+        or credentials.password != _DOCS_PASSWORD
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="unauthorized",
@@ -44,8 +52,11 @@ app = FastAPI(
         "API финансового помощника"
         " с автоматической категоризацией и учётом транзакций"
     ),
-    version="1.0.0",
-    contact={"name": "Команда FinSight", "email": "dev@finsight.example.com"},
+    version=APP_VERSION,
+    contact={
+        "name": APP_CONTACT_NAME,
+        "email": APP_CONTACT_EMAIL,
+    },
     swagger_ui_parameters={"persistAuthorization": True},
     lifespan=lifespan,
     docs_url=None,
@@ -66,6 +77,8 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 app.include_router(auth.router, prefix=settings.API_V1_PREFIX)
 app.include_router(accounts.router, prefix=settings.API_V1_PREFIX)
+app.include_router(report.router, prefix=settings.API_V1_PREFIX)
+app.include_router(transactions.router, prefix=settings.API_V1_PREFIX)
 
 
 # Register admin panel
@@ -112,6 +125,7 @@ def root():
 @app.get("/health")
 def health():
     """Проверка здоровья сервиса и состояния БД."""
+
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))

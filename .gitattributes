@@ -1,0 +1,5 @@
+# Скрипты входа и оболочки должны всегда иметь LF, иначе Docker падает:
+# "exec /app/entrypoint.sh: no such file or directory"
+backend/entrypoint.sh text eol=lf
+scripts/*.sh text eol=lf
+*.sh text eol=lf
